@@ -93,10 +93,11 @@ export default function TicketDetailPage() {
 
   async function aiAnalyze() {
     await runAi(async () => {
-      const updated = await api<TicketDetail>(`/api/tickets/${ticket!.id}/ai/analyze`, {
+      await api<TicketDetail>(`/api/tickets/${ticket!.id}/ai/analyze`, {
         method: "POST",
       });
-      setTicket(updated);
+      // Analyze returns the list shape (no messages) — refetch the detail view.
+      load();
     }, "AI triage applied.");
   }
 
@@ -111,21 +112,22 @@ export default function TicketDetailPage() {
 
   async function transition(status: TicketStatus) {
     await run(async () => {
-      const updated = await api<TicketDetail>(`/api/tickets/${ticket!.id}`, {
+      await api<TicketDetail>(`/api/tickets/${ticket!.id}`, {
         method: "PATCH",
         body: { status },
       });
-      setTicket(updated);
+      // PATCH returns the list shape (no messages) — refetch the detail view.
+      load();
     }, `Status changed to ${STATUS_LABELS[status]}.`);
   }
 
   async function changePriority(priority: TicketPriority) {
     await run(async () => {
-      const updated = await api<TicketDetail>(`/api/tickets/${ticket!.id}`, {
+      await api<TicketDetail>(`/api/tickets/${ticket!.id}`, {
         method: "PATCH",
         body: { priority },
       });
-      setTicket(updated);
+      load();
     }, `Priority set to ${PRIORITY_LABELS[priority]}.`);
   }
 

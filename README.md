@@ -1,12 +1,29 @@
 # SupportDesk — AI-Assisted Ticket Management
 
-> **Status**: Complete. A full-stack support ticket system with AI that helps agents
-> — it never decides for them.
+A full-stack support ticket system with AI-assisted classification, similar-ticket
+retrieval, and response drafting, with human review and failure-isolated AI
+integration.
 
 SupportDesk is a support ticket system where AI **assists agents, never decides**:
 auto triage (category / priority / summary / confidence), suggested replies, and
 similar resolved tickets. The agent always sends, resolves, and closes — the AI
 suggests, the human decides.
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Agent dashboard](docs/screenshots/1-agent-dashboard.png) | ![Ticket detail with AI](docs/screenshots/2-ticket-detail-ai.png) |
+| ![AI failure isolation](docs/screenshots/3-ai-failure-isolation.png) | ![QA evidence](docs/screenshots/4-qa-evidence.png) |
+
+- **Agent dashboard** — ticket list with AI triage (category & priority) and status
+- **Ticket detail** — AI summary with confidence, similar resolved tickets, and a
+  suggested reply the agent reviews, edits, and sends
+- **AI failure isolation** — when the AI provider fails, the UI explains it and the
+  ticket stays fully usable
+- **QA evidence** — test and evaluation output captured from live runs
+
+(Direct links: [`docs/spec.md`](docs/spec.md) · [`docs/qa-followup-ai-guardrails.md`](docs/qa-followup-ai-guardrails.md))
 
 ## What the AI does
 

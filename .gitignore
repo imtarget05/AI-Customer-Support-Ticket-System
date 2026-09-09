@@ -103,3 +103,5 @@ opencode.json
 plans/
 tasks/
 docs/reference-configs/
+# generated QA evidence html (regenerate via scripts/screenshots.py qa)
+docs/screenshots/qa-evidence.html
