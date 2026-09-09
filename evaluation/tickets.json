@@ -1,0 +1,554 @@
+[
+  {
+    "id": 1,
+    "subject": "Payment charged twice for order #8107",
+    "description": "Order #8107 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 2,
+    "subject": "Notifications never arrive on Pixel 7",
+    "description": "Push notifications stopped working on the Android app for my Pixel 7 about a month ago. Notification permissions are enabled in settings.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 3,
+    "subject": "Two-factor codes not accepted",
+    "description": "The 2FA codes from my authenticator app are rejected every time I try to sign in on the Android app. This started 3 days ago. I am locked out completely.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 4,
+    "subject": "Account locked after too many login attempts",
+    "description": "My account got locked on my MacBook Air after I typed the password wrong a few times. I know the password now but it still says account locked. Please unlock it.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 5,
+    "subject": "Card declined at checkout for order #8110",
+    "description": "My card keeps getting declined at checkout for order #8110 even though the card works everywhere else. I tried two different cards and got the same error.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 6,
+    "subject": "Payment charged twice for order #8100",
+    "description": "Order #8100 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 7,
+    "subject": "Feature idea: dark mode",
+    "description": "It would be great if the dashboard had a dark mode option for evening shifts. Not urgent, just a suggestion from a daily user.",
+    "expected_category": "other"
+  },
+  {
+    "id": 8,
+    "subject": "Card declined at checkout for order #8111",
+    "description": "My card keeps getting declined at checkout for order #8111 even though the card works everywhere else. I tried two different cards and got the same error.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 9,
+    "subject": "How do I change my account email?",
+    "description": "I want to move my account to a new email address because I am leaving my current company. Where can I do that?",
+    "expected_category": "other"
+  },
+  {
+    "id": 10,
+    "subject": "Cannot reset my password",
+    "description": "I clicked 'Forgot password' four times on the iOS app and no reset email ever arrives. I already checked spam and junk folders. Nothing works.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 11,
+    "subject": "Account locked after too many login attempts",
+    "description": "My account got locked on my iPhone 14 after I typed the password wrong a few times. I know the password now but it still says account locked. Please unlock it.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 12,
+    "subject": "Export button throws an error on Pixel 7",
+    "description": "Clicking 'Export' in the Android app gives a red error toast and nothing downloads. Happens with every report I try.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 13,
+    "subject": "Payment charged twice for order #8103",
+    "description": "Order #8103 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 14,
+    "subject": "Wrong item delivered \u2014 need refund",
+    "description": "The package arrived today but contains the wrong item entirely. I want to return it and get a refund for the order #8143.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 15,
+    "subject": "Export button throws an error on MacBook Air",
+    "description": "Clicking 'Export' in the web dashboard gives a red error toast and nothing downloads. Happens with every report I try.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 16,
+    "subject": "Logged out of every device and cannot log back in",
+    "description": "I was suddenly signed out everywhere. Logging in again just bounces me back to the login screen on MacBook Air. My password is definitely correct.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 17,
+    "subject": "Card declined at checkout for order #8112",
+    "description": "My card keeps getting declined at checkout for order #8112 even though the card works everywhere else. I tried two different cards and got the same error.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 18,
+    "subject": "Invoice amount is wrong for order #8115",
+    "description": "The invoice for order #8115 lists a higher total than the price shown at checkout. I was billed the wrong amount and need this corrected.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 19,
+    "subject": "Payment charged twice for order #8102",
+    "description": "Order #8102 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 20,
+    "subject": "Wrong item delivered \u2014 need refund",
+    "description": "The package arrived today but contains the wrong item entirely. I want to return it and get a refund for the order #8143.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 21,
+    "subject": "Payment charged twice for order #8105",
+    "description": "Order #8105 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 22,
+    "subject": "Dashboard shows stale data on iPhone 14",
+    "description": "The dashboard on my iPhone 14 has not updated in days while the mobile view shows new data. Seems like a sync issue after the recent release.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 23,
+    "subject": "Logged out of every device and cannot log back in",
+    "description": "I was suddenly signed out everywhere. Logging in again just bounces me back to the login screen on Pixel 7. My password is definitely correct.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 24,
+    "subject": "Refund status still processing for return #8128",
+    "description": "I shipped the returned item a week ago and the refund status still says processing. When will the money reach my account?",
+    "expected_category": "refund"
+  },
+  {
+    "id": 25,
+    "subject": "Feature idea: dark mode",
+    "description": "It would be great if the dashboard had a dark mode option for evening shifts. Not urgent, just a suggestion from a daily user.",
+    "expected_category": "other"
+  },
+  {
+    "id": 26,
+    "subject": "Wrong item delivered \u2014 need refund",
+    "description": "The package arrived today but contains the wrong item entirely. I want to return it and get a refund for the order #8135.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 27,
+    "subject": "Refund status still processing for return #8104",
+    "description": "I shipped the returned item 3 days ago and the refund status still says processing. When will the money reach my account?",
+    "expected_category": "refund"
+  },
+  {
+    "id": 28,
+    "subject": "Card declined at checkout for order #8114",
+    "description": "My card keeps getting declined at checkout for order #8114 even though the card works everywhere else. I tried two different cards and got the same error.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 29,
+    "subject": "Dashboard shows stale data on Windows laptop",
+    "description": "The dashboard on my Windows laptop has not updated in days while the mobile view shows new data. Seems like a sync issue after the recent release.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 30,
+    "subject": "Refund not received after cancelled subscription",
+    "description": "I cancelled my subscription a month ago but was still charged for the next cycle. I want a refund of that charge since I cancelled in time.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 31,
+    "subject": "Invoice amount is wrong for order #8116",
+    "description": "The invoice for order #8116 lists a higher total than the price shown at checkout. I was billed the wrong amount and need this corrected.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 32,
+    "subject": "How do I change my account email?",
+    "description": "I want to move my account to a new email address because I am leaving my current company. Where can I do that?",
+    "expected_category": "other"
+  },
+  {
+    "id": 33,
+    "subject": "Feature idea: dark mode",
+    "description": "It would be great if the dashboard had a dark mode option for evening shifts. Not urgent, just a suggestion from a daily user.",
+    "expected_category": "other"
+  },
+  {
+    "id": 34,
+    "subject": "Dashboard shows stale data on Pixel 7",
+    "description": "The dashboard on my Pixel 7 has not updated in days while the mobile view shows new data. Seems like a sync issue after the recent release.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 35,
+    "subject": "Wrong item delivered \u2014 need refund",
+    "description": "The package arrived today but contains the wrong item entirely. I want to return it and get a refund for the order #8113.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 36,
+    "subject": "Refund not received after cancelled subscription",
+    "description": "I cancelled my subscription a month ago but was still charged for the next cycle. I want a refund of that charge since I cancelled in time.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 37,
+    "subject": "Payment charged twice for order #8109",
+    "description": "Order #8109 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 38,
+    "subject": "Ios app crashes on startup",
+    "description": "Since the latest update the iOS app crashes immediately on my iPhone 14 every time I open it. Reinstalling did not help.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 39,
+    "subject": "Two-factor codes not accepted",
+    "description": "The 2FA codes from my authenticator app are rejected every time I try to sign in on the iOS app. This started 3 days ago. I am locked out completely.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 40,
+    "subject": "Android app crashes on startup",
+    "description": "Since the latest update the Android app crashes immediately on my Pixel 7 every time I open it. Reinstalling did not help.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 41,
+    "subject": "Logged out of every device and cannot log back in",
+    "description": "I was suddenly signed out everywhere. Logging in again just bounces me back to the login screen on iPhone 14. My password is definitely correct.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 42,
+    "subject": "Web dashboard crashes on startup",
+    "description": "Since the latest update the web dashboard crashes immediately on my MacBook Air every time I open it. Reinstalling did not help.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 43,
+    "subject": "Two-factor codes not accepted",
+    "description": "The 2FA codes from my authenticator app are rejected every time I try to sign in on the desktop client. This started A week ago. I am locked out completely.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 44,
+    "subject": "Notifications never arrive on MacBook Air",
+    "description": "Push notifications stopped working on the web dashboard for my MacBook Air about 3 days ago. Notification permissions are enabled in settings.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 45,
+    "subject": "Wrong item delivered \u2014 need refund",
+    "description": "The package arrived today but contains the wrong item entirely. I want to return it and get a refund for the order #8127.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 46,
+    "subject": "Notifications never arrive on iPhone 14",
+    "description": "Push notifications stopped working on the iOS app for my iPhone 14 about 3 days ago. Notification permissions are enabled in settings.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 47,
+    "subject": "Feature idea: dark mode",
+    "description": "It would be great if the dashboard had a dark mode option for evening shifts. Not urgent, just a suggestion from a daily user.",
+    "expected_category": "other"
+  },
+  {
+    "id": 48,
+    "subject": "Question about team plans",
+    "description": "Do you offer discounts for a team of around 15 people? I could not find pricing details for team accounts on the website.",
+    "expected_category": "other"
+  },
+  {
+    "id": 49,
+    "subject": "Wrong item delivered \u2014 need refund",
+    "description": "The package arrived today but contains the wrong item entirely. I want to return it and get a refund for the order #8119.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 50,
+    "subject": "Question about team plans",
+    "description": "Do you offer discounts for a team of around 15 people? I could not find pricing details for team accounts on the website.",
+    "expected_category": "other"
+  },
+  {
+    "id": 51,
+    "subject": "Dashboard shows stale data on MacBook Air",
+    "description": "The dashboard on my MacBook Air has not updated in days while the mobile view shows new data. Seems like a sync issue after the recent release.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 52,
+    "subject": "Invoice amount is wrong for order #8118",
+    "description": "The invoice for order #8118 lists a higher total than the price shown at checkout. I was billed the wrong amount and need this corrected.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 53,
+    "subject": "Notifications never arrive on Windows laptop",
+    "description": "Push notifications stopped working on the desktop client for my Windows laptop about two weeks ago. Notification permissions are enabled in settings.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 54,
+    "subject": "Refund status still processing for return #8111",
+    "description": "I shipped the returned item a week ago and the refund status still says processing. When will the money reach my account?",
+    "expected_category": "refund"
+  },
+  {
+    "id": 55,
+    "subject": "Refund status still processing for return #8175",
+    "description": "I shipped the returned item a month ago and the refund status still says processing. When will the money reach my account?",
+    "expected_category": "refund"
+  },
+  {
+    "id": 56,
+    "subject": "Cannot reset my password",
+    "description": "I clicked 'Forgot password' four times on the Android app and no reset email ever arrives. I already checked spam and junk folders. Nothing works.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 57,
+    "subject": "Refund status still processing for return #8129",
+    "description": "I shipped the returned item 3 days ago and the refund status still says processing. When will the money reach my account?",
+    "expected_category": "refund"
+  },
+  {
+    "id": 58,
+    "subject": "Refund status still processing for return #8169",
+    "description": "I shipped the returned item a month ago and the refund status still says processing. When will the money reach my account?",
+    "expected_category": "refund"
+  },
+  {
+    "id": 59,
+    "subject": "How do I change my account email?",
+    "description": "I want to move my account to a new email address because I am leaving my current company. Where can I do that?",
+    "expected_category": "other"
+  },
+  {
+    "id": 60,
+    "subject": "Payment charged twice for order #8101",
+    "description": "Order #8101 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 61,
+    "subject": "Refund status still processing for return #8171",
+    "description": "I shipped the returned item a week ago and the refund status still says processing. When will the money reach my account?",
+    "expected_category": "refund"
+  },
+  {
+    "id": 62,
+    "subject": "Account locked after too many login attempts",
+    "description": "My account got locked on my Windows laptop after I typed the password wrong a few times. I know the password now but it still says account locked. Please unlock it.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 63,
+    "subject": "Payment charged twice for order #8106",
+    "description": "Order #8106 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 64,
+    "subject": "Refund not received after cancelled subscription",
+    "description": "I cancelled my subscription 3 days ago but was still charged for the next cycle. I want a refund of that charge since I cancelled in time.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 65,
+    "subject": "Payment charged twice for order #8104",
+    "description": "Order #8104 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 66,
+    "subject": "Feature idea: dark mode",
+    "description": "It would be great if the dashboard had a dark mode option for evening shifts. Not urgent, just a suggestion from a daily user.",
+    "expected_category": "other"
+  },
+  {
+    "id": 67,
+    "subject": "How do I change my account email?",
+    "description": "I want to move my account to a new email address because I am leaving my current company. Where can I do that?",
+    "expected_category": "other"
+  },
+  {
+    "id": 68,
+    "subject": "Invoice amount is wrong for order #8119",
+    "description": "The invoice for order #8119 lists a higher total than the price shown at checkout. I was billed the wrong amount and need this corrected.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 69,
+    "subject": "Question about team plans",
+    "description": "Do you offer discounts for a team of around 15 people? I could not find pricing details for team accounts on the website.",
+    "expected_category": "other"
+  },
+  {
+    "id": 70,
+    "subject": "Cannot reset my password",
+    "description": "I clicked 'Forgot password' four times on the desktop client and no reset email ever arrives. I already checked spam and junk folders. Nothing works.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 71,
+    "subject": "How do I change my account email?",
+    "description": "I want to move my account to a new email address because I am leaving my current company. Where can I do that?",
+    "expected_category": "other"
+  },
+  {
+    "id": 72,
+    "subject": "Question about team plans",
+    "description": "Do you offer discounts for a team of around 15 people? I could not find pricing details for team accounts on the website.",
+    "expected_category": "other"
+  },
+  {
+    "id": 73,
+    "subject": "Question about team plans",
+    "description": "Do you offer discounts for a team of around 15 people? I could not find pricing details for team accounts on the website.",
+    "expected_category": "other"
+  },
+  {
+    "id": 74,
+    "subject": "Card declined at checkout for order #8113",
+    "description": "My card keeps getting declined at checkout for order #8113 even though the card works everywhere else. I tried two different cards and got the same error.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 75,
+    "subject": "How do I change my account email?",
+    "description": "I want to move my account to a new email address because I am leaving my current company. Where can I do that?",
+    "expected_category": "other"
+  },
+  {
+    "id": 76,
+    "subject": "Cannot reset my password",
+    "description": "I clicked 'Forgot password' four times on the web dashboard and no reset email ever arrives. I already checked spam and junk folders. Nothing works.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 77,
+    "subject": "Payment charged twice for order #8108",
+    "description": "Order #8108 shows two identical charges of $59.00 on my card but I only received one confirmation email. Please refund the duplicate charge.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 78,
+    "subject": "Feature idea: dark mode",
+    "description": "It would be great if the dashboard had a dark mode option for evening shifts. Not urgent, just a suggestion from a daily user.",
+    "expected_category": "other"
+  },
+  {
+    "id": 79,
+    "subject": "Refund not received after cancelled subscription",
+    "description": "I cancelled my subscription two weeks ago but was still charged for the next cycle. I want a refund of that charge since I cancelled in time.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 80,
+    "subject": "Feature idea: dark mode",
+    "description": "It would be great if the dashboard had a dark mode option for evening shifts. Not urgent, just a suggestion from a daily user.",
+    "expected_category": "other"
+  },
+  {
+    "id": 81,
+    "subject": "Question about team plans",
+    "description": "Do you offer discounts for a team of around 15 people? I could not find pricing details for team accounts on the website.",
+    "expected_category": "other"
+  },
+  {
+    "id": 82,
+    "subject": "Refund status still processing for return #8113",
+    "description": "I shipped the returned item 3 days ago and the refund status still says processing. When will the money reach my account?",
+    "expected_category": "refund"
+  },
+  {
+    "id": 83,
+    "subject": "Export button throws an error on Windows laptop",
+    "description": "Clicking 'Export' in the desktop client gives a red error toast and nothing downloads. Happens with every report I try.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 84,
+    "subject": "Two-factor codes not accepted",
+    "description": "The 2FA codes from my authenticator app are rejected every time I try to sign in on the web dashboard. This started Two weeks ago. I am locked out completely.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 85,
+    "subject": "Refund not received after cancelled subscription",
+    "description": "I cancelled my subscription a week ago but was still charged for the next cycle. I want a refund of that charge since I cancelled in time.",
+    "expected_category": "refund"
+  },
+  {
+    "id": 86,
+    "subject": "Logged out of every device and cannot log back in",
+    "description": "I was suddenly signed out everywhere. Logging in again just bounces me back to the login screen on Windows laptop. My password is definitely correct.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 87,
+    "subject": "Desktop client crashes on startup",
+    "description": "Since the latest update the desktop client crashes immediately on my Windows laptop every time I open it. Reinstalling did not help.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 88,
+    "subject": "Export button throws an error on iPhone 14",
+    "description": "Clicking 'Export' in the iOS app gives a red error toast and nothing downloads. Happens with every report I try.",
+    "expected_category": "technical"
+  },
+  {
+    "id": 89,
+    "subject": "Account locked after too many login attempts",
+    "description": "My account got locked on my Pixel 7 after I typed the password wrong a few times. I know the password now but it still says account locked. Please unlock it.",
+    "expected_category": "authentication"
+  },
+  {
+    "id": 90,
+    "subject": "Invoice amount is wrong for order #8117",
+    "description": "The invoice for order #8117 lists a higher total than the price shown at checkout. I was billed the wrong amount and need this corrected.",
+    "expected_category": "payment"
+  },
+  {
+    "id": 91,
+    "subject": "Feature idea: dark mode",
+    "description": "It would be great if the dashboard had a dark mode option for evening shifts. Not urgent, just a suggestion from a daily user.",
+    "expected_category": "other"
+  },
+  {
+    "id": 92,
+    "subject": "Refund not received after cancelled subscription",
+    "description": "I cancelled my subscription a week ago but was still charged for the next cycle. I want a refund of that charge since I cancelled in time.",
+    "expected_category": "refund"
+  }
+]

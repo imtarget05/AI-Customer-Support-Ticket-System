@@ -57,7 +57,7 @@ CATEGORY_KEYWORDS: dict[str, list[str]] = {
     ],
     TicketCategory.TECHNICAL.value: [
         "error", "bug", "crash", "broken", "not working", "fails", "sync",
-        "update", "app", "screen", "loop",
+        "update", "app", "screen", "loop", "notification", "export", "stale",
     ],
 }
 
@@ -72,6 +72,9 @@ def _stub_category(text: str) -> tuple[TicketCategory, int]:
         for value, keywords in CATEGORY_KEYWORDS.items()
     }
     best = max(scores, key=lambda k: scores[k])
+    if scores[best] == 0:
+        # No keyword evidence at all → falls into the catch-all bucket.
+        return TicketCategory.OTHER, 0
     return TicketCategory(best), scores[best]
 
 
