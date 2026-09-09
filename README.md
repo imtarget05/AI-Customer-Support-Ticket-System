@@ -1,10 +1,39 @@
-# SupportDesk — AI Customer Support Ticket System
+# SupportDesk — AI-Assisted Ticket Management
 
-> **Status**: MVP complete. Honest portfolio build, not a production product.
+> **Status**: Complete. A full-stack support ticket system with AI that helps agents
+> — it never decides for them.
 
-A support ticket system where AI **assists agents, never decides**: auto triage
-(category/priority/summary/confidence), suggested replies, similar resolved
-tickets. The agent always sends, resolves, and closes. See `docs/spec.md`.
+SupportDesk is a support ticket system where AI **assists agents, never decides**:
+auto triage (category / priority / summary / confidence), suggested replies, and
+similar resolved tickets. The agent always sends, resolves, and closes — the AI
+suggests, the human decides.
+
+## What the AI does
+
+1. **Classifies** incoming support tickets (category, priority, summary, confidence)
+2. **Finds similar** resolved tickets via embedding + cosine similarity
+3. **Generates a response draft** for the agent to review
+4. **Requires human review** before anything is sent
+
+## AI Reliability
+
+The AI layer is treated as **untrusted**. Its raw output is validated and
+guard-railed before it can reach an agent, and we test it adversarially:
+
+- **Prompt steering** — a ticket that tries to override the AI is refused
+- **Refund commitments** — the AI can never promise refunds/compensation
+- **Hallucinated policy** — the AI can't cite policies/FAQs it never saw
+- **Fabricated order info** — no invented order/account claims
+- **Provider failures** — timeout/5xx/429 retried once; recurring failures return
+  502 and leave the ticket untouched
+
+Unsafe or invalid AI output is **rejected rather than shown to agents**. When AI is
+down, the ticket still works and is handled manually (fail closed on AI, no loss
+of the business operation).
+
+Human in the loop is enforced end-to-end: the agent edits/approves any AI draft
+before it exists as a thread message, and every classification is logged to
+`ai_predictions` for review and evaluation.
 
 ## Screens
 
@@ -39,7 +68,7 @@ npm install && npm run dev         # http://localhost:5173 (proxies /api to :800
 ## Tests
 
 ```bash
-cd backend && pytest               # 46 tests, no API key / external services
+cd backend && pytest               # 55 tests, no API key / external services
 cd frontend && npm run build       # tsc strict + vite build
 ```
 
@@ -61,6 +90,23 @@ An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
 the 8B LLM, whose confusions cluster on refund↔payment and authentication↔technical.
 Measuring both providers against the same labels is the point — the classifier
 is evaluated, not assumed to work.
+
+## Quality process
+
+AI features were tested adversarially, not just on happy paths. The workflow:
+
+```
+discover → baseline → test design → execute →
+  adversarial (steering, refund, hallucination) →
+    evidence → bug triage → fix → regression → verdict
+```
+
+The AI guardrail + reliability fixes (refund-commit drafts, hallucinated
+grounding, steerable triage, confidence over-reporting, missing timeout/retry)
+were driven by a manual test battery, fixed with end-to-end regression, and
+documented in `docs/qa-followup-ai-guardrails.md`. **55 pytest cases** cover
+auth, authorization, ticket lifecycle (state machine), CRUD, boundaries,
+AI behavior and guardrail failure modes — no API key or external service needed.
 
 ## Engineering Notes
 

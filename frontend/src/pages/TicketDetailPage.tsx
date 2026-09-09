@@ -34,6 +34,7 @@ export default function TicketDetailPage() {
   const [reply, setReply] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [aiUnavailable, setAiUnavailable] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(() => {
@@ -67,8 +68,31 @@ export default function TicketDetailPage() {
     }
   }
 
+  async function runAi<T>(fn: () => Promise<T>, okMessage?: string): Promise<T | undefined> {
+    // AI is an enhancement, not the critical path: when it fails we isolate the
+    // failure and keep the ticket fully usable for manual handling.
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    setAiUnavailable(null);
+    try {
+      const result = await fn();
+      if (okMessage) setNotice(okMessage);
+      return result;
+    } catch (err) {
+      setAiUnavailable(
+        err instanceof ApiError && err.status === 502
+          ? "AI support is unavailable right now. The ticket was not changed — review it and handle it manually below."
+          : err instanceof ApiError ? `${err.status}: ${err.message}` : String(err)
+      );
+      return undefined;
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function aiAnalyze() {
-    await run(async () => {
+    await runAi(async () => {
       const updated = await api<TicketDetail>(`/api/tickets/${ticket!.id}/ai/analyze`, {
         method: "POST",
       });
@@ -77,7 +101,7 @@ export default function TicketDetailPage() {
   }
 
   async function aiSuggest() {
-    await run(async () => {
+    await runAi(async () => {
       const res = await api<Suggestion>(`/api/tickets/${ticket!.id}/ai/suggest`, {
         method: "POST",
       });
@@ -134,6 +158,7 @@ export default function TicketDetailPage() {
       </h1>
       {error && <p className="error">{error}</p>}
       {notice && <p className="notice">{notice}</p>}
+      {aiUnavailable && <p className="notice">{aiUnavailable}</p>}
 
       <div className="detail-grid">
         <div className="card">
