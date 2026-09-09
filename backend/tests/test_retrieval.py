@@ -2,6 +2,11 @@
 
 from tests.conftest import create_ticket
 
+
+def test_embed_provider_setting_defaults_to_bow():
+    from app.config import settings
+    assert settings.ai_embed_provider in ("bow", "hf")
+
 RESOLVED_DESCRIPTION = (
     "Since updating the iOS app to 4.2 logging in bounces me back to the welcome screen "
     "in a loop. Reinstalling the app did not fix it."

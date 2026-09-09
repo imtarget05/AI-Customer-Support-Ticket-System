@@ -47,6 +47,9 @@ class Settings:
     # Knowledge base directory for RAG
     knowledge_dir: str = os.getenv("KNOWLEDGE_DIR", "")
 
+    # Embedder: "bow" (hashed bag-of-words, offline default) | "hf" (sentence-transformers, lazy-load, BoW fallback)
+    ai_embed_provider: str = os.getenv("AI_EMBED_PROVIDER", "bow")
+
     # Workflow confidence thresholds
     workflow_high_confidence: float = float(os.getenv("WORKFLOW_HIGH_CONFIDENCE", "0.85"))
     workflow_low_confidence: float = float(os.getenv("WORKFLOW_LOW_CONFIDENCE", "0.60"))
