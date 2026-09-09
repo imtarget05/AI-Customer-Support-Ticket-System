@@ -183,6 +183,105 @@ class OpenAIProvider:
         )
 
 
+# --------------------------------------------------- cloudflare workers ai
+
+CF_TIMEOUT_SECONDS = 30.0
+
+
+def _extract_json_object(text: str) -> str:
+    """LLMs wrap JSON in prose/fences; pull out the outermost {...} block."""
+    start = text.find("{")
+    if start == -1:
+        raise AIProviderError(f"No JSON object in LLM output: {text[:200]!r}")
+    depth = 0
+    for i in range(start, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start : i + 1]
+    raise AIProviderError(f"Unterminated JSON in LLM output: {text[:200]!r}")
+
+
+class CloudflareProvider:
+    """Cloudflare Workers AI chat completions (@cf/... models)."""
+
+    def __init__(self) -> None:
+        self.account_id = settings.cloudflare_account_id
+        self.api_token = settings.cloudflare_api_token
+        self.model = settings.cloudflare_model
+        if not self.account_id or not self.api_token:
+            raise AIProviderError(
+                "AI_PROVIDER=cloudflare requires CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN"
+            )
+
+    def _chat(self, system: str, user: str, max_tokens: int = 400) -> str:
+        url = (
+            f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}"
+            f"/ai/run/{self.model}"
+        )
+        try:
+            response = httpx.post(
+                url,
+                headers={"Authorization": f"Bearer {self.api_token}"},
+                json={
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user},
+                    ],
+                    "max_tokens": max_tokens,
+                    "temperature": 0.2,
+                },
+                timeout=CF_TIMEOUT_SECONDS,
+            )
+            response.raise_for_status()
+            body = response.json()
+            if not body.get("success", False):
+                raise AIProviderError(f"Workers AI error: {body.get('errors')}")
+            result = body.get("result") or {}
+            # Workers AI returns either {"response": "<text>"} (legacy) or an
+            # OpenAI-style chat.completion {"choices": [...]}. Support both.
+            content = None
+            choices = result.get("choices")
+            if choices:
+                content = choices[0].get("message", {}).get("content")
+            if content is None:
+                content = result.get("response")
+            if not isinstance(content, str) or not content.strip():
+                raise AIProviderError(f"Empty LLM response: {body}")
+            return content
+        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            if isinstance(exc, AIProviderError):
+                raise
+            raise AIProviderError(f"Workers AI request failed: {exc}") from exc
+
+    def analyze(self, subject: str, description: str) -> AnalysisResult:
+        categories = ", ".join(c.value for c in TicketCategory)
+        priorities = ", ".join(p.value for p in TicketPriority)
+        raw = self._chat(
+            "You are a support-ticket triage assistant. Reply with a single JSON object only, "
+            "no other text: "
+            '{"category": "<one of: %s>", "priority": "<one of: %s>", '
+            '"summary": "<one-sentence summary>", "confidence": <0.0-1.0>}' % (categories, priorities),
+            f"Subject: {subject}\n\nDescription:\n{description}",
+            max_tokens=300,
+        )
+        try:
+            return AnalysisResult.model_validate(json.loads(_extract_json_object(raw)))
+        except (json.JSONDecodeError, ValueError) as exc:
+            raise AIProviderError(f"Malformed LLM JSON: {raw[:200]!r}") from exc
+
+    def suggest(self, subject: str, description: str, thread: str) -> str:
+        return self._chat(
+            "You are a support agent assistant. Draft a concise, friendly reply for the "
+            "support agent to review. Never promise refunds or account changes. "
+            "Output plain text only.",
+            f"Subject: {subject}\n\nDescription:\n{description}\n\nConversation so far:\n{thread}",
+            max_tokens=500,
+        )
+
+
 # ------------------------------------------------------------------- dispatch
 
 _provider: AnalysisProvider | None = None
@@ -191,7 +290,12 @@ _provider: AnalysisProvider | None = None
 def get_provider() -> AnalysisProvider:
     global _provider
     if _provider is None:
-        _provider = OpenAIProvider() if settings.ai_provider == "openai" else StubProvider()
+        if settings.ai_provider == "cloudflare":
+            _provider = CloudflareProvider()
+        elif settings.ai_provider == "openai":
+            _provider = OpenAIProvider()
+        else:
+            _provider = StubProvider()
     return _provider
 
 

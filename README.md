@@ -16,9 +16,7 @@ tickets. The agent always sends, resolves, and closes. See `docs/spec.md`.
 ## Stack
 
 - **Backend**: FastAPI + SQLAlchemy (SQLite local, PostgreSQL via `DATABASE_URL`), JWT auth (PBKDF2), pytest.
-- **AI**: stub provider by default (`AI_PROVIDER=stub`, offline, no key) and an
-  OpenAI-compatible provider (`AI_PROVIDER=openai`). LLM output is schema-validated;
-  malformed output → 502 and ticket data is left untouched.
+- **AI**: three pluggable providers via `AI_PROVIDER` — `stub` (offline rule-based, no key), `cloudflare` (Workers AI, Llama 3.1), `openai` (any /v1 endpoint). LLM output is schema-validated; malformed output → 502 and ticket data is left untouched. Credentials live in `backend/.env` (gitignored) — see `backend/.env.example`.
 - **Retrieval**: hashed bag-of-words embeddings + cosine similarity over
   resolved/closed tickets ("light RAG" reference, not a chatbot).
 - **Frontend**: Vite + React 18 + TypeScript.
@@ -51,13 +49,18 @@ cd frontend && npm run build       # tsc strict + vite build
 reports accuracy, macro-F1 and per-category F1 (pure stdlib):
 
 ```bash
-python evaluation/evaluate.py
-# Accuracy: 86/92 = 93.5% | Macro-F1: 0.94 (stub provider)
+python evaluation/evaluate.py            # uses AI_PROVIDER from backend/.env
 ```
 
-The remaining misses are genuine refund↔payment ambiguities — measuring the
-classifier surfaced them instead of hiding them. With `AI_PROVIDER=openai`
-the same script evaluates a real LLM against the same labels.
+| Provider | Accuracy | Macro-F1 |
+|---|---|---|
+| Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
+| Llama 3.1 8B via Cloudflare Workers AI (`AI_PROVIDER=cloudflare`) | **79.3%** | **0.78** |
+
+An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
+the 8B LLM, whose confusions cluster on refund↔payment and authentication↔technical.
+Measuring both providers against the same labels is the point — the classifier
+is evaluated, not assumed to work.
 
 ## Engineering Notes
 
