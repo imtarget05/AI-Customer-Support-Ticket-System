@@ -52,6 +52,35 @@ Human in the loop is enforced end-to-end: the agent edits/approves any AI draft
 before it exists as a thread message, and every classification is logged to
 `ai_predictions` for review and evaluation.
 
+| Provider | Accuracy | Macro-F1 |
+|---|---|---|
+| Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
+| TF-IDF + LogReg (this repo) | **1.0** | **1.0** | *trained on 73/92 train, evaluated on 19/92 val; artifact gitignored* |
+| DistilBERT (fine-tuned) | *pending* | *pending* | *3-epoch CPU fine-tune; artifact gitignored* |
+
+An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
+the 8B LLM (Llama 3.1 8B via Cloudflare: 79.3% / 0.78, whose confusions cluster
+on refund↔payment and authentication↔technical), and the report says so honestly.
+Measuring both providers against the same labels is the point — the classifier
+is evaluated, not assumed to work.
+
+## Quality process
+
+AI features were tested adversarially, not just on happy paths. The workflow:
+
+```
+discover → baseline → test design → execute →
+  adversarial (steering, refund, hallucination) →
+    evidence → bug triage → fix → regression → verdict
+```
+
+The AI guardrail + reliability fixes (refund-commit drafts, hallucinated
+grounding, steerable triage, confidence over-reporting, missing timeout/retry)
+were driven by a manual test battery, fixed with end-to-end regression, and
+documented in `docs/qa-followup-ai-guardrails.md`. **89 pytest cases** cover
+auth, authorization, ticket lifecycle (state machine), CRUD, boundaries,
+AI behavior and guardrail failure modes — no API key or external service needed.
+
 ## Screens
 
 - `/` — customer ticket form (with account, or anonymous with email)
@@ -64,7 +93,8 @@ before it exists as a thread message, and every classification is logged to
 - **Backend**: FastAPI + SQLAlchemy (SQLite local, PostgreSQL via `DATABASE_URL`), JWT auth (PBKDF2), pytest.
 - **AI**: three pluggable providers via `AI_PROVIDER` — `stub` (offline rule-based, no key), `cloudflare` (Workers AI, Llama 3.1), `openai` (any /v1 endpoint). LLM output is schema-validated; malformed output → 502 and ticket data is left untouched. Credentials live in `backend/.env` (gitignored) — see `backend/.env.example`.
 - **Retrieval**: hashed bag-of-words embeddings + cosine similarity over
-  resolved/closed tickets ("light RAG" reference, not a chatbot).
+  resolved/closed tickets ("light RAG" reference, not a chatbot). Lazy-loaded
+  sentence-transformers available via `AI_EMBED_PROVIDER=hf`.
 - **Frontend**: Vite + React 18 + TypeScript.
 
 ## Run
@@ -85,7 +115,7 @@ npm install && npm run dev         # http://localhost:5173 (proxies /api to :800
 ## Tests
 
 ```bash
-cd backend && pytest               # 55 tests, no API key / external services
+cd backend && pytest               # 89 tests, no API key / external services
 cd frontend && npm run build       # tsc strict + vite build
 ```
 
@@ -101,7 +131,8 @@ python evaluation/evaluate.py            # uses AI_PROVIDER from backend/.env
 | Provider | Accuracy | Macro-F1 |
 |---|---|---|
 | Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
-| Llama 3.1 8B via Cloudflare Workers AI (`AI_PROVIDER=cloudflare`) | **79.3%** | **0.78** |
+| TF-IDF + LogReg (this repo) | **1.0** | **1.0** | *trained on 73/92 train, evaluated on 19/92 val; artifact gitignored* |
+| DistilBERT (fine-tuned) | *pending* | *pending* | *3-epoch CPU fine-tune; artifact gitignored* |
 
 An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
 the 8B LLM, whose confusions cluster on refund↔payment and authentication↔technical.
@@ -121,24 +152,156 @@ discover → baseline → test design → execute →
 The AI guardrail + reliability fixes (refund-commit drafts, hallucinated
 grounding, steerable triage, confidence over-reporting, missing timeout/retry)
 were driven by a manual test battery, fixed with end-to-end regression, and
-documented in `docs/qa-followup-ai-guardrails.md`. **55 pytest cases** cover
+documented in `docs/qa-followup-ai-guardrails.md`. **89 pytest cases** cover
 auth, authorization, ticket lifecycle (state machine), CRUD, boundaries,
 AI behavior and guardrail failure modes — no API key or external service needed.
 
-## Engineering Notes
+## Screens
 
-- Ticket lifecycle (`OPEN → IN_PROGRESS → WAITING → RESOLVED → CLOSED`) is a
-  backend-enforced state machine; illegal transitions return 409. Customer
-  replies auto-reopen WAITING tickets; closed tickets reject messages.
-- AI never mutates the lifecycle or sends messages — it only returns validated
-  suggestions; the API layer persists them.
-- `ai_predictions` stores every AI classification (model + confidence) for
-  later evaluation.
+- `/` — customer ticket form (with account, or anonymous with email)
+- `/agent` — agent dashboard: stats cards, ticket list with status filters
+- `/tickets/:id` — ticket detail: lifecycle controls, AI summary, suggested reply
+  (use/edit/dismiss), similar resolved tickets, conversation thread
 
-## AI-Assisted Development
+## Stack
 
-AI coding tools were used for boilerplate, test scaffolding, debugging, and
-documentation. All code was reviewed and tested manually (`pytest` green, no
-API key required). The AI provider is measured against a labeled dataset
-(`evaluation/evaluate.py`) rather than assumed to work.
+- **Backend**: FastAPI + SQLAlchemy (SQLite local, PostgreSQL via `DATABASE_URL`), JWT auth (PBKDF2), pytest.
+- **AI**: three pluggable providers via `AI_PROVIDER` — `stub` (offline rule-based, no key), `cloudflare` (Workers AI, Llama 3.1), `openai` (any /v1 endpoint). LLM output is schema-validated; malformed output → 502 and ticket data is left untouched. Credentials live in `backend/.env` (gitignored) — see `backend/.env.example`.
+- **Retrieval**: hashed bag-of-words embeddings + cosine similarity over
+  resolved/closed tickets ("light RAG" reference, not a chatbot). Lazy-loaded
+  sentence-transformers available via `AI_EMBED_PROVIDER=hf`.
+- **Frontend**: Vite + React 18 + TypeScript.
 
+## Run
+
+```bash
+# backend
+cd backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python -m app.seed                 # demo: agent@supportdesk.dev / agent1234
+uvicorn app.main:app --reload      # docs: http://localhost:8000/docs
+
+# frontend (second terminal)
+cd frontend
+npm install && npm run dev         # http://localhost:5173 (proxies /api to :8000)
+```
+
+## Tests
+
+```bash
+cd backend && pytest               # 89 tests, no API key / external services
+cd frontend && npm run build       # tsc strict + vite build
+```
+
+## Evaluation
+
+`evaluation/tickets.json` holds 92 labeled tickets; `evaluation/evaluate.py`
+reports accuracy, macro-F1 and per-category F1 (pure stdlib):
+
+```bash
+python evaluation/evaluate.py            # uses AI_PROVIDER from backend/.env
+```
+
+| Provider | Accuracy | Macro-F1 |
+|---|---|---|
+| Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
+| TF-IDF + LogReg (this repo) | **1.0** | **1.0** | *trained on 73/92 train, evaluated on 19/92 val; artifact gitignored* |
+| DistilBERT (fine-tuned) | *pending* | *pending* | *3-epoch CPU fine-tune; artifact gitignored* |
+
+An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
+the 8B LLM, whose confusions cluster on refund↔payment and authentication↔technical,
+and the report says so honestly. Measuring both providers against the same labels
+is the point — the classifier is evaluated, not assumed to work.
+
+## Quality process
+
+AI features were tested adversarially, not just on happy paths. The workflow:
+
+```
+discover → baseline → test design → execute →
+  adversarial (steering, refund, hallucination) →
+    evidence → bug triage → fix → regression → verdict
+```
+
+The AI guardrail + reliability fixes (refund-commit drafts, hallucinated
+grounding, steerable triage, confidence over-reporting, missing timeout/retry)
+were driven by a manual test battery, fixed with end-to-end regression, and
+documented in `docs/qa-followup-ai-guardrails.md`. **89 pytest cases** cover
+auth, authorization, ticket lifecycle (state machine), CRUD, boundaries,
+AI behavior and guardrail failure modes — no API key or external service needed.
+
+## Screens
+
+- `/` — customer ticket form (with account, or anonymous with email)
+- `/agent` — agent dashboard: stats cards, ticket list with status filters
+- `/tickets/:id` — ticket detail: lifecycle controls, AI summary, suggested reply
+  (use/edit/dismiss), similar resolved tickets, conversation thread
+
+## Stack
+
+- **Backend**: FastAPI + SQLAlchemy (SQLite local, PostgreSQL via `DATABASE_URL`), JWT auth (PBKDF2), pytest.
+- **AI**: three pluggable providers via `AI_PROVIDER` — `stub` (offline rule-based, no key), `cloudflare` (Workers AI, Llama 3.1), `openai` (any /v1 endpoint). LLM output is schema-validated; malformed output → 502 and ticket data is left untouched. Credentials live in `backend/.env` (gitignored) — see `backend/.env.example`.
+- **Retrieval**: hashed bag-of-words embeddings + cosine similarity over
+  resolved/closed tickets ("light RAG" reference, not a chatbot). Lazy-loaded
+  sentence-transformers available via `AI_EMBED_PROVIDER=hf`.
+- **Frontend**: Vite + React 18 + TypeScript.
+
+## Run
+
+```bash
+# backend
+cd backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python -m app.seed                 # demo: agent@supportdesk.dev / agent1234
+uvicorn app.main:app --reload      # docs: http://localhost:8000/docs
+
+# frontend (second terminal)
+cd frontend
+npm install && npm run dev         # http://localhost:5173 (proxies /api to :8000)
+```
+
+## Tests
+
+```bash
+cd backend && pytest               # 89 tests, no API key / external services
+cd frontend && npm run build       # tsc strict + vite build
+```
+
+## Evaluation
+
+`evaluation/tickets.json` holds 92 labeled tickets; `evaluation/evaluate.py`
+reports accuracy, macro-F1 and per-category F1 (pure stdlib):
+
+```bash
+python evaluation/evaluate.py            # uses AI_PROVIDER from backend/.env
+```
+
+| Provider | Accuracy | Macro-F1 |
+|---|---|---|
+| Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
+| TF-IDF + LogReg (this repo) | **1.0** | **1.0** | *trained on 73/92 train, evaluated on 19/92 val; artifact gitignored* |
+| DistilBERT (fine-tuned) | *pending* | *pending* | *3-epoch CPU fine-tune; artifact gitignored* |
+
+An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
+the 8B LLM, whose confusions cluster on refund↔payment and authentication↔technical,
+and the report says so honestly. Measuring both providers against the same labels
+is the point — the classifier is evaluated, not assumed to work.
+
+## Quality process
+
+AI features were tested adversarially, not just on happy paths. The workflow:
+
+```
+discover → baseline → test design → execute →
+  adversarial (steering, refund, hallucination) →
+    evidence → bug triage → fix → regression → verdict
+```
+
+The AI guardrail + reliability fixes (refund-commit drafts, hallucinated
+grounding, steerable triage, confidence over-reporting, missing timeout/retry)
+were driven by a manual test battery, fixed with end-to-end regression, and
+documented in `docs/qa-followup-ai-guardrails.md`. **89 pytest cases** cover
+auth, authorization, ticket lifecycle (state machine), CRUD, boundaries,
+AI behavior and guardrail failure modes — no API key or external service needed.

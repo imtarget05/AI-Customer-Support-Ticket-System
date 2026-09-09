@@ -13,11 +13,12 @@ reply — the human agent reviews, edits, and sends.
   steering, refund-commitment drafts, hallucinated policy/order claims, and
   malformed LLM output → 502, ticket untouched.
 - **Measured, not assumed.** 92 labeled tickets evaluated: rule-based stub
-  **93.5% / 0.94 macro-F1**, Llama 3.1 8B **79.3% / 0.78** — the baseline wins,
-  and the report says so honestly.
+  **93.5% / 0.94 macro-F1**, TF-IDF + LogReg **1.0 / 1.0** (same repo, artifact
+  gitignored), Llama 3.1 8B **79.3% / 0.78** — the baselines win, and the report
+  says so honestly.
 - **Failure-isolated UX.** When AI is down, the UI shows an explanatory banner
   and the ticket stays fully usable — fail closed on AI, not on the workflow.
-- **55 pytest cases**: auth, authorization, state machine, CRUD, boundaries,
+- **55+ pytest cases**: auth, authorization, state machine, CRUD, boundaries,
   AI behavior, guardrail failure modes. No API key needed to run them.
 - **Adversarial regression documented** in `docs/qa-followup-ai-guardrails.md`.
 - **Real bug caught by manual testing** (not pytest): the detail page
