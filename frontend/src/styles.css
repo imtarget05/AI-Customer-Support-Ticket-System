@@ -1,0 +1,98 @@
+:root {
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --text: #1d2733;
+  --muted: #6b7787;
+  --accent: #2457e6;
+  --danger: #c0392b;
+  --border: #dde3ea;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.7rem 1.4rem; background: var(--card); border-bottom: 1px solid var(--border);
+}
+.brand { font-weight: 700; font-size: 1.15rem; color: var(--accent); text-decoration: none; }
+.topbar nav { display: flex; gap: 1rem; align-items: center; }
+.topbar nav a { color: var(--text); text-decoration: none; }
+.topbar nav a:hover { color: var(--accent); }
+
+.container { max-width: 1080px; margin: 1.5rem auto; padding: 0 1rem; }
+
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 1.1rem 1.3rem; margin-bottom: 1rem;
+}
+.card.narrow { max-width: 520px; margin: 2rem auto; }
+
+label { display: block; margin: 0.7rem 0 0.3rem; font-weight: 600; font-size: 0.92rem; }
+label.inline { display: inline-block; }
+input, textarea, select {
+  width: 100%; padding: 0.5rem 0.65rem; margin-top: 0.25rem;
+  border: 1px solid var(--border); border-radius: 6px; font: inherit;
+}
+label.inline select { width: auto; }
+
+button {
+  background: var(--accent); color: #fff; border: none; border-radius: 6px;
+  padding: 0.5rem 1rem; font: inherit; cursor: pointer; margin-top: 0.5rem;
+}
+button:hover:not(:disabled) { filter: brightness(1.08); }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+button.secondary { background: var(--muted); }
+.linklike { background: none; color: var(--text); border: none; padding: 0; }
+.linklike:hover { color: var(--accent); filter: none; }
+
+.error { color: var(--danger); font-weight: 600; }
+.notice { color: #1e7a3c; font-weight: 600; }
+.hint { color: var(--muted); font-size: 0.88rem; }
+
+.stat-grid { display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 0.8rem 1.3rem; display: flex; flex-direction: column; min-width: 110px;
+}
+.stat-card.alert .stat-value { color: var(--danger); }
+.stat-value { font-size: 1.6rem; font-weight: 700; }
+.stat-label { color: var(--muted); font-size: 0.85rem; }
+
+.toolbar { display: flex; align-items: center; gap: 0.6rem; margin: 0.8rem 0; }
+.toolbar select { width: auto; margin: 0; }
+
+.ticket-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+.ticket-table th, .ticket-table td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border); }
+.ticket-table th { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; }
+.ticket-table a { color: var(--accent); text-decoration: none; }
+
+.badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+.badge-open { background: #e8f0fe; color: #2457e6; }
+.badge-in_progress { background: #fff4dd; color: #a06a00; }
+.badge-waiting { background: #f1e8ff; color: #6d3fc0; }
+.badge-resolved { background: #e2f7e8; color: #1e7a3c; }
+.badge-closed { background: #eceff3; color: #6b7787; }
+
+.priority-urgent { color: var(--danger); font-weight: 700; }
+.priority-high { color: #b95500; font-weight: 600; }
+.priority-normal { color: var(--text); }
+.priority-low { color: var(--muted); }
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.detail-grid .card { margin-bottom: 0; }
+.detail-grid .card:first-child { grid-column: 1 / -1; }
+
+.btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.similar-list { padding-left: 1.1rem; }
+.similar-list li { margin-bottom: 0.4rem; }
+
+.message { border-left: 3px solid var(--border); padding: 0.4rem 0.8rem; margin: 0.7rem 0; }
+.message-agent { border-left-color: var(--accent); background: #f7f9ff; }
+.message-customer { border-left-color: #a9b6c5; }
+.message p { margin: 0.3rem 0 0; white-space: pre-wrap; }
+
+@media (max-width: 760px) {
+  .detail-grid { grid-template-columns: 1fr; }
+}
