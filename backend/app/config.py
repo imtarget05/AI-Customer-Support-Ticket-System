@@ -40,6 +40,10 @@ class Settings:
     ai_provider: str = os.getenv("AI_PROVIDER", "stub")
     ai_model: str = os.getenv("AI_MODEL", "gpt-4o-mini")
 
+    # Guardrail on unsafe LLM output: "reject" (return 502, keep ticket) default,
+    # or "fallback" (return a neutral draft instead of the blocked one).
+    ai_guardrail_mode: str = os.getenv("AI_GUARDRAIL_MODE", "reject")
+
     # Cloudflare Workers AI
     cloudflare_account_id: str = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
     cloudflare_api_token: str = os.getenv("CLOUDFLARE_API_TOKEN", "")

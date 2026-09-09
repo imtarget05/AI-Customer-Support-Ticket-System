@@ -190,6 +190,9 @@ export default function TicketDetailPage() {
             <p className="hint">No AI analysis yet.</p>
           )}
           {isAgent && (
+            <p className="hint">AI triage is unaudited — verify before acting on it.</p>
+          )}
+          {isAgent && (
             <button disabled={busy} onClick={aiAnalyze}>
               {ticket.ai_summary ? "Re-run AI analyze" : "Run AI analyze"}
             </button>
@@ -215,7 +218,7 @@ export default function TicketDetailPage() {
                   </button>
                 </p>
                 <p className="hint">
-                  AI suggestions are drafts only — nothing is sent until you send the reply.
+                  AI draft — unaudited. Verify policy, order numbers, and promises before sending. Nothing is sent until you send the reply.
                 </p>
               </>
             ) : (
