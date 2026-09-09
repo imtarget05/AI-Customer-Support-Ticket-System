@@ -44,6 +44,13 @@ class Settings:
     # or "fallback" (return a neutral draft instead of the blocked one).
     ai_guardrail_mode: str = os.getenv("AI_GUARDRAIL_MODE", "reject")
 
+    # Knowledge base directory for RAG
+    knowledge_dir: str = os.getenv("KNOWLEDGE_DIR", "")
+
+    # Workflow confidence thresholds
+    workflow_high_confidence: float = float(os.getenv("WORKFLOW_HIGH_CONFIDENCE", "0.85"))
+    workflow_low_confidence: float = float(os.getenv("WORKFLOW_LOW_CONFIDENCE", "0.60"))
+
     # Cloudflare Workers AI
     cloudflare_account_id: str = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
     cloudflare_api_token: str = os.getenv("CLOUDFLARE_API_TOKEN", "")

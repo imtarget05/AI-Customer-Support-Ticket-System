@@ -5,6 +5,8 @@
 - suggest: returns a draft reply. NEVER sends it — the agent must post a message
   explicitly through the normal message endpoint.
 - similar: resolved/closed tickets ranked by embedding cosine similarity.
+- workflow: full LangGraph workflow (classify -> retrieve -> draft -> confidence check).
+- knowledge: knowledge base statistics and management.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -16,6 +18,8 @@ from app.deps import require_agent
 from app.models import AIPrediction, Ticket
 from app.schemas import AISuggestionOut, SimilarTicketsOut, TicketOut
 from app.services import ai_service, retrieval_service, ticket_service
+from app.services.graph_workflow import get_graph
+from app.services.knowledge_base import get_knowledge_base
 
 router = APIRouter(prefix="/api/tickets", tags=["ai"])
 
@@ -83,3 +87,87 @@ def similar(
 ) -> SimilarTicketsOut:
     ticket = _ticket_or_404(db, ticket_id)
     return SimilarTicketsOut(items=retrieval_service.find_similar_tickets(db, ticket))
+
+
+@router.post("/{ticket_id}/ai/workflow")
+def workflow(
+    ticket_id: int,
+    db: Session = Depends(get_db),
+    agent=Depends(require_agent),
+) -> dict:
+    """Run the full LangGraph workflow for a ticket.
+
+    This endpoint orchestrates:
+    1. Ticket classification (category, priority, summary, confidence)
+    2. Context retrieval from knowledge base (RAG)
+    3. Response drafting with evidence
+    4. Confidence check and routing decision
+
+    The workflow NEVER sends a response — it returns a draft and routing
+    decision for the agent to review.
+    """
+    ticket = _ticket_or_404(db, ticket_id)
+    thread = "\n".join(f"{m.sender.role}: {m.content}" for m in ticket.messages)
+
+    graph = get_graph()
+    result = graph.process_ticket(
+        ticket_id=ticket.id,
+        subject=ticket.subject,
+        description=ticket.description,
+        thread=thread,
+    )
+
+    # Update ticket with classification results (if successful)
+    if not result.error:
+        ticket.category = result.category
+        ticket.priority = result.priority
+        ticket.ai_summary = result.summary
+        ticket.ai_confidence = result.confidence
+        db.add(
+            AIPrediction(
+                ticket_id=ticket.id,
+                model=settings.ai_provider,
+                category=result.category,
+                priority=result.priority,
+                confidence=result.confidence,
+            )
+        )
+        db.commit()
+        db.refresh(ticket)
+        retrieval_service.ensure_embedding(db, ticket)
+
+    return {
+        "workflow_id": result.workflow_id,
+        "ticket_id": result.ticket_id,
+        "stage": result.stage.value,
+        "category": result.category,
+        "priority": result.priority,
+        "summary": result.summary,
+        "confidence": result.confidence,
+        "draft": result.draft,
+        "requires_human_review": result.requires_human_review,
+        "requires_approval": result.requires_approval,
+        "review_reason": result.review_reason,
+        "evidence": result.evidence,
+        "audit_log": result.audit_log,
+        "error": result.error,
+    }
+
+
+@router.get("/ai/knowledge/stats")
+def knowledge_stats(
+    agent=Depends(require_agent),
+) -> dict:
+    """Get knowledge base statistics."""
+    kb = get_knowledge_base()
+    return kb.get_stats()
+
+
+@router.post("/ai/knowledge/ingest")
+def knowledge_ingest(
+    agent=Depends(require_agent),
+) -> dict:
+    """Trigger knowledge base ingestion."""
+    kb = get_knowledge_base()
+    count = kb.ingest(force=True)
+    return {"documents_ingested": count, **kb.get_stats()}
