@@ -55,3 +55,23 @@ def analyze(provider: str = "stub", limit: int | None = None) -> dict:
         "confusion": confusion,
         "misses": misses,
     }
+
+
+def render_markdown(out: dict) -> str:
+    preds = sorted({k for v in out["confusion"].values() for k in v})
+    lines = [
+        "# Error analysis (stub)",
+        f"Accuracy: {out['accuracy']:.1%}  Macro-F1: {out['macro_f1']:.2f}",
+        "## Confusion",
+        "| expected \\ predicted | " + " | ".join(preds) + " |",
+    ]
+    for exp, row in sorted(out["confusion"].items()):
+        lines.append(f"| {exp} | " + " | ".join(str(row.get(c, 0)) for c in preds) + " |")
+    lines.append("## Top misses")
+    for m in out["misses"][:10]:
+        lines.append(f"- #{m['id']} exp={m['expected']} got={m['predicted']}: {m['subject']}")
+    return "\n".join(lines) + "\n"
+
+
+if __name__ == "__main__":
+    print(render_markdown(analyze()))

@@ -15,3 +15,10 @@ def test_analyze_returns_confusion_and_misses():
     assert 0.0 <= out["accuracy"] <= 1.0
     assert "refund" in out["confusion"]
     assert isinstance(out["misses"], list)
+
+
+def test_render_markdown_contains_confusion(tmp_path):
+    from analyze_errors import analyze, render_markdown
+    out = analyze(provider="stub", limit=20)
+    md = render_markdown(out)
+    assert "confusion" in md.lower() and "miss" in md.lower()
