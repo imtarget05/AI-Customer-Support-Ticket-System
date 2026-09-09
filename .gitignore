@@ -90,3 +90,16 @@ tasks/.current.md.tmp.*
 .claude/.active-plan
 .claude/.plan-state/
 # END: repo-harness generated-runtime
+
+# Internal tooling (do not publish)
+.ai/
+.claude/
+.clinerules/
+.kilo/
+_ops/
+AGENTS.md
+CLAUDE.md
+opencode.json
+plans/
+tasks/
+docs/reference-configs/
