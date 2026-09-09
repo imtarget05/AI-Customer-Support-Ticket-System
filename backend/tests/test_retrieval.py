@@ -7,6 +7,20 @@ def test_embed_provider_setting_defaults_to_bow():
     from app.config import settings
     assert settings.ai_embed_provider in ("bow", "hf")
 
+
+def test_embed_text_dispatches_and_falls_back_offline(monkeypatch):
+    import dataclasses
+    from app import config as config_module
+    from app.services import retrieval_service
+    vec = retrieval_service.embed_text("refund my charge twice")
+    assert isinstance(vec, list) and len(vec) in (128, 384)
+    monkeypatch.setattr(
+        config_module, "settings",
+        dataclasses.replace(config_module.settings, ai_embed_provider="hf"),
+    )
+    vec2 = retrieval_service.embed_text("login locked out")
+    assert isinstance(vec2, list) and len(vec2) in (128, 384)
+
 RESOLVED_DESCRIPTION = (
     "Since updating the iOS app to 4.2 logging in bounces me back to the welcome screen "
     "in a loop. Reinstalling the app did not fix it."

@@ -38,6 +38,37 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
     return 0.0 if norm == 0 else round(dot / norm, 4)
 
 
+_HF_MODEL = None
+
+
+def _embed_hf(texts: list[str]) -> list[list[float]] | None:
+    """Lazy-load MiniLM; return None when offline/missing dep (fallback BoW)."""
+    global _HF_MODEL
+    try:
+        from sentence_transformers import SentenceTransformer
+        if _HF_MODEL is None:
+            _HF_MODEL = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        return [list(map(float, v)) for v in _HF_MODEL.encode(texts, normalize_embeddings=True)]
+    except Exception:
+        return None
+
+
+def embed_text(text: str) -> list[float]:
+    from app.config import settings
+    if settings.ai_embed_provider == "hf":
+        out = _embed_hf([text])
+        if out:
+            return out[0]
+    return embed(text)
+
+
+def get_embed_dim() -> int:
+    from app.config import settings
+    if settings.ai_embed_provider == "hf" and _HF_MODEL is not None:
+        return len(_HF_MODEL.encode(["probe"], normalize_embeddings=True)[0])
+    return EMBED_DIM
+
+
 def _encode(vector: list[float]) -> str:
     return json.dumps(vector)
 
