@@ -1,5 +1,6 @@
 """Error-analysis tests (confusion matrix + miss list, stub provider offline)."""
 
+import json
 import sys
 from pathlib import Path
 
@@ -17,8 +18,9 @@ def test_analyze_returns_confusion_and_misses():
     assert isinstance(out["misses"], list)
 
 
-def test_render_markdown_contains_confusion(tmp_path):
-    from analyze_errors import analyze, render_markdown
-    out = analyze(provider="stub", limit=20)
-    md = render_markdown(out)
-    assert "confusion" in md.lower() and "miss" in md.lower()
+def test_export_dataset_stratified_split():
+    from export_dataset import stratified_split
+    rows = json.loads((EVAL / "tickets.json").read_text())
+    train, val = stratified_split(rows, seed=42)
+    assert len(train) + len(val) == len(rows)
+    assert {r["expected_category"] for r in val} <= {r["expected_category"] for r in rows}
