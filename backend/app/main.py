@@ -1,6 +1,7 @@
 """FastAPI application entry point: uvicorn app.main:app"""
 
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -24,8 +25,14 @@ else:
     Base.metadata.create_all(bind=engine)
 
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    engine.dispose()
+
 def create_app() -> FastAPI:
-    app = FastAPI(title="SupportDesk API", version="0.1.0")
+    app = FastAPI(title="SupportDesk API", version="0.1.0", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -43,6 +50,10 @@ def create_app() -> FastAPI:
     @app.get("/api/health", tags=["meta"])
     def health() -> dict:
         return {"status": "ok"}
+
+    @app.get("/", tags=["meta"])
+    def root() -> dict:
+        return {"title": app.title, "version": app.version}
 
     return app
 

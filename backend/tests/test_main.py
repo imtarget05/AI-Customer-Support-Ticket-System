@@ -37,3 +37,9 @@ def test_invalid_database_url_raises_at_import(monkeypatch):
 def test_dockerfile_exists():
     import pathlib
     assert pathlib.Path(__file__).resolve().parent.parent.parent / "Dockerfile"
+
+
+def test_app_title_and_version(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json()["title"] == "SupportDesk API"
