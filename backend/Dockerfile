@@ -8,7 +8,12 @@ FROM python:3.12-slim
 
 WORKDIR /srv/backend
 COPY --from=builder /root/.local /srv/.local
-COPY backend/ .
+COPY backend/ ./
+# Evaluation scripts + frontend config are exercised by the test suite
+# (test_error_analysis, test_model_comparison, test_security_headers).
+# Tests resolve the repo root at /srv (backend's parent), so absolute paths:
+COPY evaluation/ /srv/evaluation/
+COPY frontend/nginx.conf /srv/frontend/nginx.conf
 
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /srv
