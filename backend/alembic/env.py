@@ -1,5 +1,7 @@
 from logging.config import fileConfig
 
+import os
+
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
@@ -12,6 +14,13 @@ from app.models import User, Ticket, Message, TicketEmbedding, AIPrediction, AIE
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# Single source of truth: DATABASE_URL env var overrides alembic.ini.
+# Without this, `alembic upgrade head` always migrates the sqlite default
+# from alembic.ini even when the app engine points at Postgres.
+_db_url = os.getenv("DATABASE_URL")
+if _db_url:
+    config.set_main_option("sqlalchemy.url", _db_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
