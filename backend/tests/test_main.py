@@ -32,3 +32,8 @@ def test_invalid_database_url_raises_at_import(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "not-a-real-dialect://")
     with pytest.raises(RuntimeError, match="Unsupported database dialect"):
         importlib.reload(importlib.import_module("app.config"))
+
+
+def test_dockerfile_exists():
+    import pathlib
+    assert pathlib.Path(__file__).resolve().parent.parent.parent / "Dockerfile"
