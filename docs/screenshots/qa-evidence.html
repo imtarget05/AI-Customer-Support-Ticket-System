@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset='utf-8'><style>body{font-family:monospace;background:#f7f8fa;padding:24px;}pre{background:#10141c;color:#d7e0f0;padding:16px;border-radius:6px;white-space:pre-wrap;}</style></head><body><h1>SupportDesk — QA evidence</h1><p>Numbers below are captured from live tool runs (pytest / evaluation).</p><pre>Accuracy: 86/92 = 93.5%
+Macro-F1: 0.94
+---- pytest ----
+55 passed, 84 warnings in 5.00s
+---- evaluation (stub) ----
+Dataset: 92 labeled tickets | provider: stub
+Accuracy: 86/92 = 93.5%
+
+category         precision    recall        f1  support
+authentication        1.00      1.00      1.00       16
+other                 1.00      1.00      1.00       20
+payment               0.77      1.00      0.87       20
+refund                1.00      0.70      0.82       20
+technical             1.00      1.00      1.00       16
+
+Macro-F1: 0.94
+
+Misclassified (6):
+  #30 expected=refund        got=payment       :: Refund not received after cancelled subscription
+  #36 expected=refund        got=payment       :: Refund not received after cancelled subscription
+  #64 expected=refund        got=payment       :: Refund not received after cancelled subscription
+  #79 expected=refund        got=payment       :: Refund not received after cancelled subscription
+  #85 expected=refund        got=payment       :: Refund not received after cancelled subscription
+  #92 expected=refund        got=payment       :: Refund not received after cancelled subscription</pre></body></html>
