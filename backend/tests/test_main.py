@@ -23,7 +23,7 @@ def test_health_endpoint_returns_ok(client):
 
 
 def test_missing_jwt_secret_raises_at_import(monkeypatch):
-    monkeypatch.setenv("JWT_SECRET", "")
+    monkeypatch.setenv("JWT_SECRET", "x" * 31)  # Explicitly short (31 chars < 32-min)
     with pytest.raises(RuntimeError, match="JWT_SECRET"):
         importlib.reload(importlib.import_module("app.config"))
 

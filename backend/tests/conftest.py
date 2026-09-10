@@ -1,12 +1,13 @@
 """Test setup: isolated SQLite DB per test, no external services required."""
 
 import os
+import secrets
 import tempfile
 
 # Must be set before importing app modules (config reads env at import time).
 _TMP_DIR = tempfile.mkdtemp(prefix="supportdesk-test-")
 os.environ["DATABASE_URL"] = f"sqlite:///{_TMP_DIR}/test.db"
-os.environ["JWT_SECRET"] = "test-secret-32-bytes-long-enough-fat32"
+os.environ["JWT_SECRET"] = secrets.token_urlsafe(32)
 os.environ["AI_PROVIDER"] = "stub"
 
 import pytest
