@@ -1,3 +1,39 @@
 # Artifacts and data for eval (not for commit)
 evaluation/artifacts/
 evaluation/data/
+
+# Local SQLite databases (created by dev/test/alembic)
+*.db
+*.sqlite
+*.sqlite3
+
+# Local environment secrets — NEVER commit real credentials
+.env
+backend/.env
+
+# Local workflow state — keep out of git (machine-local only)
+.env.example
+AGENTS.md
+CLAUDE.md
+PRODUCT.md
+DESIGN.md
+plans/
+tasks/
+.ai/
+.archcontext/
+.repo-harness/
+.opencode/
+opencode.json
+opencode.jsonc
+.kilocode/
+.kilo/
+.clinerules/
+.claude/
+.codex/
+.cursor/
+.vscode/
+.windsurf/
+.gemini/
+skill-observations/
+.impeccable/
+.codegraph/
