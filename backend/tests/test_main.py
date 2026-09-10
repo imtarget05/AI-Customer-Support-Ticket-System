@@ -1,0 +1,34 @@
+"""Startup behavior: env validation and health endpoint."""
+
+import importlib
+import os
+
+import pytest
+
+from fastapi.testclient import TestClient
+
+from app.main import app
+
+
+@pytest.fixture()
+def client():
+    with TestClient(app) as c:
+        yield c
+
+
+def test_health_endpoint_returns_ok(client):
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_missing_jwt_secret_raises_at_import(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "")
+    with pytest.raises(RuntimeError, match="JWT_SECRET"):
+        importlib.reload(importlib.import_module("app.config"))
+
+
+def test_invalid_database_url_raises_at_import(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "not-a-real-dialect://")
+    with pytest.raises(RuntimeError, match="Unsupported database dialect"):
+        importlib.reload(importlib.import_module("app.config"))

@@ -71,3 +71,14 @@ class Settings:
 
 
 settings = Settings()
+
+if len(settings.jwt_secret) < 32:
+    raise RuntimeError("JWT_SECRET must be at least 32 characters")
+
+from urllib.parse import urlparse
+
+parsed = urlparse(settings.database_url)
+if not parsed.scheme:
+    raise RuntimeError("DATABASE_URL must have a scheme")
+if parsed.scheme not in {"sqlite", "postgresql", "postgres", "mysql"}:
+    raise RuntimeError(f"Unsupported database dialect: {parsed.scheme}")
