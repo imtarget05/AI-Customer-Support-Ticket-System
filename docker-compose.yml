@@ -1,0 +1,72 @@
+# SupportDesk — production-like stack
+# Usage:
+#   docker compose up -d --build          # postgres + backend + frontend (prod)
+#   docker compose --profile build up frontend-build  # one-off frontend build via container (optional)
+# Repo-root context required: docker build -f backend/Dockerfile .
+
+services:
+  # ── Infrastructure ──────────────────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: supportdesk
+      POSTGRES_USER: supportdesk
+      POSTGRES_PASSWORD: supportdesk
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supportdesk"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: on-failure
+
+  # ── Backend (FastAPI) ───────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      - AI_PROVIDER=stub
+      - AI_EMBED_PROVIDER=bow
+      - DATABASE_URL=postgresql://supportdesk:supportdesk@db:5432/supportdesk
+      - ALEMBIC_MIGRATE=true
+      - JWT_SECRET=${JWT_SECRET:-dev-only-secret-change-in-production}
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      retries: 3
+
+  # ── Frontend (Nginx serving dist + proxy /api) ──
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    restart: on-failure
+
+  # ── One-off builder (optional, not run by default) ──
+  frontend-build:
+    image: node:20-alpine
+    working_dir: /srv/frontend
+    volumes:
+      - ./frontend:/srv/frontend:ro
+    command: ["npm", "run", "build"]
+    profiles: ["build"]
+
+volumes:
+  pgdata:
