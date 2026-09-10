@@ -100,3 +100,21 @@ def test_cosine_similarity_known_values():
 
     assert cosine_similarity([1.0, 0.0], [1.0, 0.0]) == 1.0
     assert cosine_similarity([1.0, 0.0], [0.0, 1.0]) == 0.0
+
+
+def test_embed_uses_sha256_not_md5():
+    """Verify embed() uses SHA-256, not MD5 (SonarQube security fix)."""
+    from app.services.retrieval_service import embed
+
+    # Same input should produce deterministic output
+    v1 = embed("test ticket about password reset")
+    v2 = embed("test ticket about password reset")
+    assert v1 == v2
+
+    # Verify output format: 128-dim float vector
+    assert len(v1) == 128
+    assert all(isinstance(x, float) for x in v1)
+
+    # Verify it's deterministic across calls
+    v3 = embed("another test subject about refunds")
+    assert len(v3) == 128

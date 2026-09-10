@@ -21,10 +21,12 @@ TOKEN_RE = re.compile(r"[a-z0-9]+")
 
 
 def embed(text: str) -> list[float]:
-    """Hashed bag-of-words, L2-normalized. Deterministic."""
+    """Hashed bag-of-words using SHA-256, L2-normalized. Deterministic."""
     vector = [0.0] * EMBED_DIM
     for token in TOKEN_RE.findall(text.lower()):
-        digest = hashlib.md5(token.encode("utf-8")).digest()
+        # Use SHA-256 instead of MD5 (cryptographically broken,
+        # flagged by SonarQube as "Use of a broken or weak cryptographic algorithm")
+        digest = hashlib.sha256(token.encode("utf-8")).digest()
         index = int.from_bytes(digest[:4], "big") % EMBED_DIM
         sign = 1.0 if digest[4] % 2 == 0 else -1.0
         vector[index] += sign
