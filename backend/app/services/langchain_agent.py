@@ -149,9 +149,14 @@ class _ExistingProviderLLM:
         self._provider = provider
 
     def invoke(self, prompt: str, **kwargs: Any) -> str:
-        """Invoke the LLM with a prompt."""
+        """Invoke the LLM with a prompt.
+
+        The prompt is treated as the main content (ticket description) so it
+        actually reaches the model rather than being interpreted as a bare
+        subject line.
+        """
         try:
-            return ai_service.suggest_response(prompt, "", "")
+            return ai_service.suggest_response("LLM prompt", prompt, "")
         except ai_service.AIProviderError as exc:
             raise RuntimeError(f"LLM invocation failed: {exc}") from exc
 

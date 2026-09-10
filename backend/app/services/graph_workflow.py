@@ -11,6 +11,7 @@ This module implements the control plane for the AI-assisted support workflow:
 from __future__ import annotations
 
 import logging
+import re
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -202,7 +203,10 @@ class TicketProcessingGraph:
         else:
             state.confidence_level = ConfidenceLevel.LOW
         dangerous_patterns = ["refund", "cancel", "delete", "compensate", "guarantee"]
-        has_dangerous_action = any(pattern in state.draft.lower() for pattern in dangerous_patterns)
+        draft_lower = state.draft.lower()
+        has_dangerous_action = any(
+            re.search(rf"\b{re.escape(pattern)}\b", draft_lower) for pattern in dangerous_patterns
+        )
         if has_dangerous_action:
             state.requires_approval = True
             state.review_reason = "Draft contains potentially dangerous action"

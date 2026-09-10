@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.deps import require_agent
+from app.enums import TicketStatus
 from app.models import AIPrediction, Ticket
 from app.schemas import AISuggestionOut, SimilarTicketsOut, TicketOut
 from app.services import ai_service, retrieval_service, ticket_service
@@ -28,6 +29,8 @@ def _ticket_or_404(db: Session, ticket_id: int) -> Ticket:
     ticket = ticket_service.get_ticket_or_none(db, ticket_id)
     if ticket is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+    if ticket.status == TicketStatus.CLOSED.value:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ticket is closed")
     return ticket
 
 

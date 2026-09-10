@@ -18,7 +18,7 @@ reply — the human agent reviews, edits, and sends.
   says so honestly.
 - **Failure-isolated UX.** When AI is down, the UI shows an explanatory banner
   and the ticket stays fully usable — fail closed on AI, not on the workflow.
-- **55+ pytest cases**: auth, authorization, state machine, CRUD, boundaries,
+- **95 pytest cases**: auth, authorization, state machine, CRUD, boundaries,
   AI behavior, guardrail failure modes. No API key needed to run them.
 - **Adversarial regression documented** in `docs/qa-followup-ai-guardrails.md`.
 - **Real bug caught by manual testing** (not pytest): the detail page

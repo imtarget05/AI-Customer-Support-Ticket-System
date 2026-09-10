@@ -24,6 +24,7 @@ from pydantic import BaseModel, Field
 from app.config import settings
 from app.enums import TicketCategory, TicketPriority
 from app.services import guardrails
+from app.services.metrics import record_call, record_error
 
 
 class AIProviderError(Exception):
@@ -187,6 +188,10 @@ class OpenAIProvider:
     """OpenAI-compatible chat completions (works with any /v1 endpoint)."""
 
     def __init__(self) -> None:
+        if not settings.openai_api_key:
+            raise AIProviderError(
+                "OPENAI_API_KEY is not set. Configure it in backend/.env or set the env var."
+            )
         self.api_key = settings.openai_api_key
         self.base_url = settings.openai_base_url.rstrip("/")
         self.model = settings.ai_model
@@ -391,7 +396,14 @@ def set_provider(provider: AnalysisProvider | None) -> None:
 
 
 def analyze_ticket(subject: str, description: str) -> AnalysisResult:
-    result = _call_with_retry(lambda: get_provider().analyze(subject, description))
+    t0 = time.perf_counter()
+    try:
+        result = _call_with_retry(lambda: get_provider().analyze(subject, description))
+    except Exception as exc:
+        record_error()
+        raise
+    latency_ms = int((time.perf_counter() - t0) * 1000)
+    record_call(latency_ms=latency_ms, confidence=result.confidence)
     # Refuse a triage that looks steered by injected instructions in the text.
     try:
         guardrails.assert_sterile_triage(result)
@@ -401,7 +413,14 @@ def analyze_ticket(subject: str, description: str) -> AnalysisResult:
 
 
 def suggest_response(subject: str, description: str, thread: str) -> str:
-    draft = _call_with_retry(lambda: get_provider().suggest(subject, description, thread))
+    t0 = time.perf_counter()
+    try:
+        draft = _call_with_retry(lambda: get_provider().suggest(subject, description, thread))
+    except Exception as exc:
+        record_error()
+        raise
+    latency_ms = int((time.perf_counter() - t0) * 1000)
+    record_call(latency_ms=latency_ms, confidence=None)
     try:
         guardrails.assert_safe_draft(draft, thread)
     except guardrails.GuardrailError as exc:

@@ -1,5 +1,8 @@
 """FastAPI application entry point: uvicorn app.main:app"""
 
+import os
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,8 +12,16 @@ from app.api.metrics import router as metrics_router
 from app.config import settings
 from app.database import Base, engine
 
-# Dev-grade schema creation. Production path: manage with Alembic (deferred, see plan).
-Base.metadata.create_all(bind=engine)
+# Schema management: dev/test uses create_all for convenience; production uses Alembic.
+# Switch via ALEMBIC_MIGRATE=true to run `alembic upgrade head` on startup.
+if os.getenv("ALEMBIC_MIGRATE", "").lower() in ("1", "true", "yes"):
+    from alembic.config import Config
+    from alembic import command
+
+    alembic_cfg = Config(str(Path(__file__).resolve().parent.parent / "alembic.ini"))
+    command.upgrade(alembic_cfg, "head")
+else:
+    Base.metadata.create_all(bind=engine)
 
 
 def create_app() -> FastAPI:

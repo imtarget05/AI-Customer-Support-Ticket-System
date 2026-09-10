@@ -32,7 +32,7 @@ def _split_origins(raw: str) -> list[str]:
 @dataclass(frozen=True)
 class Settings:
     database_url: str = os.getenv("DATABASE_URL", "sqlite:///./supportdesk.db")
-    jwt_secret: str = os.getenv("JWT_SECRET", "dev-secret-change-me")
+    jwt_secret: str = os.getenv("JWT_SECRET", "change-this-to-32-plus-byte-secret-in-prod")
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = int(os.getenv("JWT_EXPIRE_MINUTES", "720"))
 
