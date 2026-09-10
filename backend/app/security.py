@@ -9,7 +9,7 @@ import jwt
 
 from app.config import settings
 
-PBKDF2_ITERATIONS = 200_000
+PBKDF2_ITERATIONS = 600_000  # Increased from 200_000 per OWASP 2024 recommendation
 
 
 def hash_password(password: str) -> str:
