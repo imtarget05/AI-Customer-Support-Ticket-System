@@ -33,7 +33,7 @@ services:
       - AI_EMBED_PROVIDER=bow
       - DATABASE_URL=postgresql://supportdesk:supportdesk@db:5432/supportdesk
       - ALEMBIC_MIGRATE=true
-      - JWT_SECRET=${JWT_SECRET:-dev-only-secret-change-in-production}
+      - JWT_SECRET=${JWT_SECRET}
     ports:
       - "8000:8000"
     restart: on-failure

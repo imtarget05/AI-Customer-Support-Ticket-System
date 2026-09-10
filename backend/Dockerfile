@@ -21,7 +21,6 @@ USER appuser
 ENV AI_PROVIDER=stub \
     AI_EMBED_PROVIDER=bow \
     DATABASE_URL=sqlite:///./supportdesk.db \
-    JWT_SECRET=dev-only-secret-change-in-production \
     ENVIRONMENT=production
 
 EXPOSE 8000
