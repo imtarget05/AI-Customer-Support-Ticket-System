@@ -6,11 +6,42 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.enums import UserRole
 from app.models import User
-from app.schemas import BootstrapRequest, LoginRequest, TokenResponse, UserPublic
+from app.schemas import (
+    BootstrapRequest,
+    LoginRequest,
+    RegisterRequest,
+    TokenResponse,
+    UserPublic,
+)
 from app.security import create_access_token, hash_password
 from app.services import auth_service
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+def register(body: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
+    """Customer self-registration (đăng ký), separate from login (đăng nhập).
+
+    Always creates a CUSTOMER account — role is not client-controlled, agent
+    accounts exist only via the token-guarded bootstrap endpoint. Auto-logs the
+    new user in by returning the standard TokenResponse.
+    """
+    email = body.email.strip().lower()
+    if db.query(User).filter(User.email == email).first() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
+        )
+    user = User(
+        name=body.name.strip(),
+        email=email,
+        password_hash=hash_password(body.password),
+        role=UserRole.CUSTOMER.value,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return TokenResponse(access_token=create_access_token(user), user=UserPublic.model_validate(user))
 
 
 @router.post("/login", response_model=TokenResponse)

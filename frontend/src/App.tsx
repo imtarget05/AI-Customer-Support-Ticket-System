@@ -3,6 +3,7 @@ import { Link, Navigate, Route, Routes } from "react-router-dom";
 import { api, getToken, setToken } from "./lib/api";
 import type { User } from "./types";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import SupportPage from "./pages/SupportPage";
 import DashboardPage from "./pages/DashboardPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
@@ -63,7 +64,10 @@ export default function App() {
               Log out ({user.name})
             </button>
           ) : (
-            <Link to="/login">Log in</Link>
+            <>
+              <Link to="/login">Log in</Link>
+              <Link to="/register">Sign up</Link>
+            </>
           )}
         </nav>
       </header>
@@ -74,6 +78,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<SupportPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route
               path="/agent"
               element={

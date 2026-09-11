@@ -4,9 +4,10 @@ import { api, setToken } from "../lib/api";
 import type { User } from "../types";
 import { useAuth } from "../App";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const { setUser } = useAuth();
   const navigate = useNavigate();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -17,15 +18,15 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
     try {
-      const res = await api<{ access_token: string; user: User }>("/api/auth/login", {
+      const res = await api<{ access_token: string; user: User }>("/api/auth/register", {
         method: "POST",
-        body: { email, password },
+        body: { name, email, password },
       });
       setToken(res.access_token);
       setUser(res.user);
-      navigate(res.user.role === "agent" ? "/agent" : "/");
+      navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setBusy(false);
     }
@@ -33,11 +34,22 @@ export default function LoginPage() {
 
   return (
     <div className="card narrow">
-      <h1>Log in</h1>
+      <h1>Create your account</h1>
       <p className="hint">
-        No account yet? <Link to="/register">Sign up</Link>
+        Already have an account? <Link to="/login">Log in</Link>
       </p>
       <form onSubmit={onSubmit}>
+        <label>
+          Name
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            minLength={1}
+            maxLength={120}
+          />
+        </label>
         <label>
           Email
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -49,11 +61,16 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            minLength={8}
+            aria-describedby="password-hint"
           />
         </label>
+        <p className="hint" id="password-hint">
+          At least 8 characters.
+        </p>
         {error && <p className="error">{error}</p>}
         <button type="submit" disabled={busy}>
-          {busy ? "Logging in…" : "Log in"}
+          {busy ? "Creating account…" : "Sign up"}
         </button>
       </form>
     </div>
