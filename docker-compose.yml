@@ -1,8 +1,11 @@
 # SupportDesk — production-like stack
 # Usage:
+#   export JWT_SECRET="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"  # 64 hex chars, once per shell
 #   docker compose up -d --build          # postgres + backend + frontend (prod)
 #   docker compose --profile build up frontend-build  # one-off frontend build via container (optional)
 # Repo-root context required: docker build -f backend/Dockerfile .
+# JWT_SECRET has NO default on purpose — compose fails fast if it is unset,
+# so a prod-like deploy can never silently run with a public dev secret.
 
 services:
   # ── Infrastructure ──────────────────────────────
@@ -33,7 +36,7 @@ services:
       - AI_EMBED_PROVIDER=bow
       - DATABASE_URL=postgresql://supportdesk:supportdesk@db:5432/supportdesk
       - ALEMBIC_MIGRATE=true
-      - JWT_SECRET=${JWT_SECRET:-dev-only-secret-32-plus-bytes-long-change-me}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required - export a 32+ char secret before 'docker compose up'}
     ports:
       - "8000:8000"
     restart: on-failure

@@ -16,6 +16,11 @@ from sqlalchemy.orm import Session
 from app.models import Ticket, TicketEmbedding
 
 EMBED_DIM = 128
+# Pinned hash algorithm for the BoW embedder. MD5 is cryptographically broken
+# (SonarQube: "Use of a broken or weak cryptographic algorithm") — the test
+# `test_embed_uses_sha256_not_md5` asserts on this constant, so a silent
+# downgrade to MD5 fails loudly instead of passing unnoticed.
+HASH_ALGORITHM = "sha256"
 SIMILAR_STATUSES = ("resolved", "closed")
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 
@@ -24,9 +29,7 @@ def embed(text: str) -> list[float]:
     """Hashed bag-of-words using SHA-256, L2-normalized. Deterministic."""
     vector = [0.0] * EMBED_DIM
     for token in TOKEN_RE.findall(text.lower()):
-        # Use SHA-256 instead of MD5 (cryptographically broken,
-        # flagged by SonarQube as "Use of a broken or weak cryptographic algorithm")
-        digest = hashlib.sha256(token.encode("utf-8")).digest()
+        digest = hashlib.new(HASH_ALGORITHM, token.encode("utf-8")).digest()
         index = int.from_bytes(digest[:4], "big") % EMBED_DIM
         sign = 1.0 if digest[4] % 2 == 0 else -1.0
         vector[index] += sign

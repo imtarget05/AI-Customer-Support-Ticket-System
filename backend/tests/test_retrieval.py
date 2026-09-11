@@ -104,17 +104,48 @@ def test_cosine_similarity_known_values():
 
 def test_embed_uses_sha256_not_md5():
     """Verify embed() uses SHA-256, not MD5 (SonarQube security fix)."""
-    from app.services.retrieval_service import embed
+    import hashlib
+    import math
+    import re
+
+    from app.services import retrieval_service
+    from app.services.retrieval_service import EMBED_DIM, embed
+
+    # The hash algorithm must be pinned and auditable, not buried inline.
+    assert retrieval_service.HASH_ALGORITHM == "sha256"
+
+    # Independently recompute the expected vector with SHA-256 only.
+    # An MD5-based implementation produces a different vector and fails here.
+    token_re = re.compile(r"[a-z0-9]+")
+
+    def reference_sha256(text: str) -> list[float]:
+        vector = [0.0] * EMBED_DIM
+        for token in token_re.findall(text.lower()):
+            digest = hashlib.sha256(token.encode("utf-8")).digest()
+            index = int.from_bytes(digest[:4], "big") % EMBED_DIM
+            sign = 1.0 if digest[4] % 2 == 0 else -1.0
+            vector[index] += sign
+        norm = math.sqrt(sum(v * v for v in vector)) or 1.0
+        return [round(v / norm, 6) for v in vector]
+
+    def reference_md5(text: str) -> list[float]:
+        vector = [0.0] * EMBED_DIM
+        for token in token_re.findall(text.lower()):
+            digest = hashlib.md5(token.encode("utf-8")).digest()
+            index = int.from_bytes(digest[:4], "big") % EMBED_DIM
+            sign = 1.0 if digest[4] % 2 == 0 else -1.0
+            vector[index] += sign
+        norm = math.sqrt(sum(v * v for v in vector)) or 1.0
+        return [round(v / norm, 6) for v in vector]
+
+    text = "test ticket about password reset"
+    assert embed(text) == reference_sha256(text)
+    assert embed(text) != reference_md5(text)
 
     # Same input should produce deterministic output
-    v1 = embed("test ticket about password reset")
-    v2 = embed("test ticket about password reset")
-    assert v1 == v2
+    assert embed(text) == embed(text)
 
     # Verify output format: 128-dim float vector
+    v1 = embed(text)
     assert len(v1) == 128
     assert all(isinstance(x, float) for x in v1)
-
-    # Verify it's deterministic across calls
-    v3 = embed("another test subject about refunds")
-    assert len(v3) == 128
