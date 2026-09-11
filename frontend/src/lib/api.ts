@@ -1,5 +1,10 @@
 const TOKEN_KEY = "supportdesk_token";
 
+// Absolute backend origin baked at build time (Cloudflare Pages env).
+// Local dev: unset -> "" -> relative /api (Vite proxies to localhost:8000).
+const API_BASE: string =
+  ((import.meta.env.VITE_API_URL as string | undefined) ?? "").replace(/\/+$/, "");
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -28,7 +33,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(path, {
+  const res = await fetch(API_BASE + path, {
     method: options.method ?? "GET",
     headers,
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
