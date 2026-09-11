@@ -1,11 +1,15 @@
 """FastAPI application entry point: uvicorn app.main:app"""
 
+import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from app.api import auth, dashboard, tickets
 from app.api.ai import router as ai_router
@@ -13,23 +17,45 @@ from app.api.metrics import router as metrics_router
 from app.config import settings
 from app.database import Base, engine
 
-# Schema management: dev/test uses create_all for convenience; production uses Alembic.
-# Switch via ALEMBIC_MIGRATE=true to run `alembic upgrade head` on startup.
-if os.getenv("ALEMBIC_MIGRATE", "").lower() in ("1", "true", "yes"):
-    from alembic.config import Config
-    from alembic import command
+logger = logging.getLogger(__name__)
+_schema_setup_failed = False
 
-    alembic_cfg = Config(str(Path(__file__).resolve().parent.parent / "alembic.ini"))
-    command.upgrade(alembic_cfg, "head")
-else:
-    Base.metadata.create_all(bind=engine)
 
+def _run_schema_setup() -> None:
+    global _schema_setup_failed
+    try:
+        if settings.alembic_migrate:
+            from alembic.config import Config
+            from alembic import command
+
+            alembic_cfg = Config(str(Path(__file__).resolve().parent.parent / "alembic.ini"))
+            command.upgrade(alembic_cfg, "head")
+        else:
+            Base.metadata.create_all(bind=engine)
+    except Exception as exc:
+        _schema_setup_failed = True
+        logger.error("Database startup failed: %s", type(exc).__name__)
+
+
+_run_schema_setup()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
     engine.dispose()
+
+
+def _database_ready() -> bool:
+    if _schema_setup_failed:
+        return False
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        return True
+    except Exception:
+        return False
+
 
 def create_app() -> FastAPI:
     app = FastAPI(title="SupportDesk API", version="0.1.0", lifespan=lifespan)
@@ -47,11 +73,16 @@ def create_app() -> FastAPI:
 
     app.include_router(dashboard.router)
 
-    @app.get("/api/health", tags=["meta"])
-    def health() -> dict:
-        return {"status": "ok"}
+    @app.get("/api/health")
+    def health() -> Any:
+        if _database_ready():
+            return {"status": "ok"}
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unavailable", "database": "unavailable"},
+        )
 
-    @app.get("/", tags=["meta"])
+    @app.get("/")
     def root() -> dict:
         return {"title": app.title, "version": app.version}
 

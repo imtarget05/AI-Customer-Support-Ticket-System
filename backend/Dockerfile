@@ -8,29 +8,28 @@ FROM python:3.12-slim
 
 WORKDIR /srv/backend
 COPY --from=builder /root/.local /srv/.local
-COPY backend/ ./
-# Evaluation scripts + frontend config are exercised by the test suite
-# (test_error_analysis, test_model_comparison, test_security_headers).
-# Tests resolve the repo root at /srv (backend's parent), so absolute paths:
-COPY evaluation/ /srv/evaluation/
-COPY frontend/nginx.conf /srv/frontend/nginx.conf
+COPY backend/app ./app
+COPY backend/alembic ./alembic
+COPY backend/alembic.ini ./alembic.ini
+COPY evaluation/*.py ./evaluation/
+COPY evaluation/tickets.json ./evaluation/tickets.json
+COPY frontend/nginx.conf ./frontend/nginx.conf
 
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /srv
 
 ENV PATH=/srv/.local/bin:$PATH \
-    PYTHONPATH=/srv/.local/lib/python3.12/site-packages
+    PYTHONPATH=/srv/.local/lib/python3.12/site-packages \
+    PORT=8000
 
 USER appuser
 
 ENV AI_PROVIDER=stub \
-    AI_EMBED_PROVIDER=bow \
-    DATABASE_URL=sqlite:///./supportdesk.db \
-    ENVIRONMENT=production
+    AI_EMBED_PROVIDER=bow
 
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
+  CMD python -c "import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.getenv('PORT', '8000') + '/api/health')" || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port \"${PORT:-8000}\""]

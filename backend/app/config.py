@@ -7,6 +7,16 @@ real credentials — `.env` is gitignored; `.env.example` documents the shape.
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlparse
+
+JWT_SECRET_PLACEHOLDERS = {
+    "change-this-to-32-plus-byte-secret-in-prod",
+    "your-32-plus-character-secret-here",
+    "your_jwt_secret",
+    "change-me",
+    "dev-secret-change-me",
+}
+LOCAL_JWT_SECRET = "supportdesk-local-only-development-secret-32-bytes"
 
 
 def _load_dotenv() -> None:
@@ -25,14 +35,47 @@ def _load_dotenv() -> None:
 _load_dotenv()
 
 
+def _is_deployment() -> bool:
+    render = os.getenv("RENDER", "").strip().lower()
+    environment = os.getenv("ENVIRONMENT", "").strip().lower()
+    return render in {"1", "true", "yes", "on"} or environment in {
+        "production",
+        "prod",
+        "staging",
+    }
+
+
+def _as_bool(value: str | None, default: bool) -> bool:
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _split_origins(raw: str) -> list[str]:
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
+def _database_url() -> str:
+    return os.getenv("DATABASE_URL", "sqlite:///./supportdesk.db")
+
+
+def _jwt_secret_value() -> str:
+    raw_value = os.getenv("JWT_SECRET")
+    if raw_value is None:
+        if _is_deployment():
+            raise RuntimeError("JWT_SECRET is required in deployment")
+        return LOCAL_JWT_SECRET
+
+    value = raw_value.strip()
+    if value in JWT_SECRET_PLACEHOLDERS:
+        raise RuntimeError("JWT_SECRET must not be a placeholder")
+    return value
+
+
 @dataclass(frozen=True)
 class Settings:
-    database_url: str = os.getenv("DATABASE_URL", "sqlite:///./supportdesk.db")
-    jwt_secret: str = os.getenv("JWT_SECRET", "change-this-to-32-plus-byte-secret-in-prod")
+    database_url: str = _database_url()
+    jwt_secret: str = _jwt_secret_value()
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = int(os.getenv("JWT_EXPIRE_MINUTES", "720"))
 
@@ -63,9 +106,21 @@ class Settings:
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
     openai_base_url: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 
+    alembic_migrate: bool = _as_bool(
+        os.getenv("ALEMBIC_MIGRATE"), default=_is_deployment()
+    )
+
+    # One-time prod bootstrap secret. Empty = bootstrap endpoint disabled.
+    bootstrap_token: str = os.getenv("BOOTSTRAP_TOKEN", "")
+
     cors_origins: list[str] = field(
         default_factory=lambda: _split_origins(
-            os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
+            os.getenv(
+                "CORS_ORIGINS",
+                "http://localhost:5173,http://localhost:3000"
+                if not _is_deployment()
+                else "",
+            )
         )
     )
 
@@ -75,10 +130,10 @@ settings = Settings()
 if len(settings.jwt_secret) < 32:
     raise RuntimeError("JWT_SECRET must be at least 32 characters")
 
-from urllib.parse import urlparse
-
 parsed = urlparse(settings.database_url)
 if not parsed.scheme:
     raise RuntimeError("DATABASE_URL must have a scheme")
 if parsed.scheme not in {"sqlite", "postgresql", "postgres", "mysql"}:
     raise RuntimeError(f"Unsupported database dialect: {parsed.scheme}")
+if _is_deployment() and parsed.scheme not in {"postgresql", "postgres"}:
+    raise RuntimeError("DATABASE_URL must use PostgreSQL in deployment")
