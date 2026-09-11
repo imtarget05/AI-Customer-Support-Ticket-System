@@ -74,23 +74,25 @@ def run_migrations_online() -> None:
     with connectable.connect() as connection:
         database_url = config.get_main_option("sqlalchemy.url", "")
         use_postgresql = _is_postgresql_url(database_url)
-        if use_postgresql:
-            connection.exec_driver_sql(
-                "SELECT pg_advisory_lock(hashtext('supportdesk_migrations'))"
-            )
 
         try:
             context.configure(
                 connection=connection, target_metadata=target_metadata
             )
 
+            # Transaction-scoped advisory lock taken INSIDE the migration
+            # transaction. A session-level pg_advisory_lock runs in its own
+            # implicit transaction, which breaks the migration transaction on
+            # Neon (the DDL appears to run but never persists); the xact
+            # variant is bound to this transaction and auto-releases on commit.
             with context.begin_transaction():
+                if use_postgresql:
+                    connection.exec_driver_sql(
+                        "SELECT pg_advisory_xact_lock(hashtext('supportdesk_migrations'))"
+                    )
                 context.run_migrations()
-        finally:
-            if use_postgresql:
-                connection.exec_driver_sql(
-                    "SELECT pg_advisory_unlock(hashtext('supportdesk_migrations'))"
-                )
+        except Exception:
+            raise
 
 
 if context.is_offline_mode():
