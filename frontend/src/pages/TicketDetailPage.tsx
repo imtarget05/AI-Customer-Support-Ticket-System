@@ -160,7 +160,7 @@ export default function TicketDetailPage() {
       </h1>
       {error && <p className="error">{error}</p>}
       {notice && <p className="notice">{notice}</p>}
-      {aiUnavailable && <p className="notice">{aiUnavailable}</p>}
+      {aiUnavailable && <p data-testid="ai-unavailable" role="alert" className="ai-unavailable">{aiUnavailable}</p>}
 
       <div className="detail-grid">
         <div className="card">

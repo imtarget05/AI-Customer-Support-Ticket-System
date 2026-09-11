@@ -48,6 +48,7 @@ button.secondary { background: var(--muted); }
 .linklike:hover { color: var(--accent); filter: none; }
 
 .error { color: var(--danger); font-weight: 600; }
+.ai-unavailable { color: var(--danger); background: #fdecec; border: 1px solid var(--danger); border-radius: 6px; padding: 8px 12px; font-weight: 600; }
 .notice { color: #1e7a3c; font-weight: 600; }
 .hint { color: var(--muted); font-size: 0.88rem; }
 
