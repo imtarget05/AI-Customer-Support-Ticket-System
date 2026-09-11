@@ -278,15 +278,24 @@ export default function TicketDetailPage() {
       <div className="card">
         <h2>Conversation</h2>
         {ticket.messages.length === 0 && <p className="hint">No replies yet.</p>}
-        {ticket.messages.map((m) => (
-          <div key={m.id} className={`message message-${m.sender.role}`}>
-            <strong>{m.sender.name}</strong>{" "}
-            <span className="hint">
-              ({m.sender.role}) · {new Date(m.created_at).toLocaleString()}
-            </span>
-            <p>{m.content}</p>
-          </div>
-        ))}
+        <div className="message-list" style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {ticket.messages.map((m) => (
+            <div
+              key={m.id}
+              className={`message message-${m.sender.role}`}
+              style={{ maxWidth: "75%" }}
+            >
+              <strong>{m.sender.name}</strong>{" "}
+              <span className="hint">
+                ({m.sender.role}) · {new Date(m.created_at).toLocaleString()}
+              </span>
+              <span className={`role-badge-${m.sender.role}`}>
+                {m.sender.role === "agent" ? "Hỗ trợ" : "Khách hàng"}
+              </span>
+              <p>{m.content}</p>
+            </div>
+          ))}
+        </div>
 
         {user ? (
           ticket.status !== "closed" ? (
