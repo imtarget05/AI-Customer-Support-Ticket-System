@@ -11,8 +11,7 @@ COPY --from=builder /root/.local /srv/.local
 COPY backend/app ./app
 COPY backend/alembic ./alembic
 COPY backend/alembic.ini ./alembic.ini
-COPY evaluation/*.py ./evaluation/
-COPY evaluation/tickets.json ./evaluation/tickets.json
+COPY evaluation/ ./evaluation/
 COPY frontend/nginx.conf ./frontend/nginx.conf
 
 RUN useradd -m -u 1000 appuser && \
