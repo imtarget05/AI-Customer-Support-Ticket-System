@@ -1,5 +1,5 @@
 from app.schemas.ai import AISuggestionOut, SimilarTicketOut, SimilarTicketsOut
-from app.schemas.auth import LoginRequest, TokenResponse, UserPublic
+from app.schemas.auth import BootstrapRequest, LoginRequest, TokenResponse, UserPublic
 from app.schemas.dashboard import DashboardStats
 from app.schemas.tickets import (
     MessageCreate,
@@ -16,6 +16,7 @@ __all__ = [
     "SimilarTicketOut",
     "SimilarTicketsOut",
     "LoginRequest",
+    "BootstrapRequest",
     "TokenResponse",
     "UserPublic",
     "DashboardStats",
