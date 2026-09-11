@@ -8,11 +8,10 @@ FROM python:3.12-slim
 
 WORKDIR /srv/backend
 COPY --from=builder /root/.local /srv/.local
-COPY backend/app ./app
-COPY backend/alembic ./alembic
-COPY backend/alembic.ini ./alembic.ini
-COPY evaluation/ ./evaluation/
-COPY frontend/nginx.conf ./frontend/nginx.conf
+COPY backend/ ./
+# Tests resolve the repo root at /srv (backend's parent), so absolute paths:
+COPY evaluation/ /srv/evaluation/
+COPY frontend/nginx.conf /srv/frontend/nginx.conf
 
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /srv
