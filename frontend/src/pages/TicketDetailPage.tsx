@@ -10,16 +10,8 @@ import type {
   TicketStatus,
 } from "../types";
 import { CATEGORY_LABELS, PRIORITY_LABELS, STATUS_LABELS } from "../types";
+import { statusAvailability } from "../lib/ticketUi";
 import { useAuth } from "../App";
-
-// Mirror of the backend state machine (the backend is the enforcer).
-const NEXT_STATUSES: Record<TicketStatus, TicketStatus[]> = {
-  open: ["in_progress"],
-  in_progress: ["waiting", "resolved"],
-  waiting: ["in_progress"],
-  resolved: ["closed"],
-  closed: [],
-};
 
 const PRIORITIES: TicketPriority[] = ["low", "normal", "high", "urgent"];
 
@@ -180,13 +172,19 @@ export default function TicketDetailPage() {
           {isAgent && (
             <>
               <h3>Agent controls</h3>
-              <p className="btn-row">
-                {NEXT_STATUSES[ticket.status].map((s) => (
-                  <button key={s} disabled={busy} onClick={() => transition(s)}>
-                    → {STATUS_LABELS[s]}
-                  </button>
-                ))}
-                {ticket.status === "closed" && <em>Closed (terminal)</em>}
+              <p className="btn-row" data-testid="status-flow">
+                {statusAvailability(ticket.status).map(
+                  ({ status: s, enabled, reason, current }) => (
+                    <button
+                      key={s}
+                      disabled={busy || !enabled}
+                      title={reason || undefined}
+                      onClick={() => current ? null : transition(s)}
+                    >
+                      {current ? "●" : "→"} {STATUS_LABELS[s]}
+                    </button>
+                  )
+                )}
               </p>
               <label className="inline">
                 Priority:{" "}
