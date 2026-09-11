@@ -38,7 +38,7 @@
 | `JWT_SECRET` | Random ≥32 chars. Never commit or bake into image. Rotate → all sessions logout. |
 | `ENVIRONMENT` | `production` (enables Postgres-only + strict CORS fail-fast). |
 | `ALEMBIC_MIGRATE` | `true` — idempotent `upgrade head` at boot. |
-| `AI_PROVIDER` / `AI_EMBED_PROVIDER` | `stub` / `bow` until a Cloudflare token with **Workers AI → Run** permission exists (`ai/run` must return 200, not 401). |
+| `AI_PROVIDER` / `AI_EMBED_PROVIDER` | `cloudflare` / `bow` — real LLM `@cf/meta/llama-3.1-8b-instruct` via Workers AI. Needs `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` (token must have **Workers AI → Run**; verify with `ai/run` → 200). A draft that fails the safety guardrail (e.g. promises a refund) returns **502 by design** — retry produces a fresh draft. |
 | `BOOTSTRAP_TOKEN` | Random ≥8 chars, set **before first deploy**; blank after bootstrap (§4). |
 | `CORS_ORIGINS` | Set AFTER Pages deploy: `https://<app>.pages.dev`, then redeploy API. |
 
