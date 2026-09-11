@@ -1,0 +1,11 @@
+# Keep secrets and local state out of the Render Docker build context.
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+__pycache__/
+*.py[cod]
+.venv/
+tests/
+.pytest_cache/
