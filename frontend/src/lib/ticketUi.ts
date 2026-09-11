@@ -1,5 +1,45 @@
 import type { TicketStatus } from "../types";
 
+// Độ tin cậy AI: level + text tiếng Việt
+export interface ConfidenceDisplay {
+  pct: number;
+  level: "low" | "medium" | "high";
+  text: string;
+}
+
+/**
+ * Chuyển đổi giá trị độ tin cậy (0-1) thành thông ngữ tiếng Việt.
+ * - v < 0.5: low, cần kiểm tra kỹ
+ * - 0.5 ≤ v < 0.8: medium, tham khảo nhưng kiểm tra lại
+ * - v ≥ 0.8: high, vẫn cần xác minh
+ * - v == null: Chưa có đánh giá AI
+ */
+export function describeConfidence(v: number | null): ConfidenceDisplay {
+  if (v === null) {
+    return { pct: 0, level: "low", text: "Chưa có đánh giá AI" };
+  }
+  const pct = Math.round(v * 100);
+  if (v < 0.5) {
+    return {
+      pct,
+      level: "low",
+      text: `Độ tin cậy: ${pct}% (Thấp — AI chưa chắc, cần đọc kỹ ticket trước khi hành động)`,
+    };
+  }
+  if (v < 0.8) {
+    return {
+      pct,
+      level: "medium",
+      text: `Độ tin cậy: ${pct}% (Trung bình — tham khảo, nên kiểm tra lại)`,
+    };
+  }
+  return {
+    pct,
+    level: "high",
+    text: `Độ tin cậy: ${pct}% (Cao — vẫn cần xác minh trước khi trả lời khách)`,
+  };
+}
+
 // Full status lifecycle flow
 export const STATUS_FLOW: TicketStatus[] = [
   "open",

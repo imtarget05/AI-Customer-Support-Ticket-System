@@ -10,7 +10,7 @@ import type {
   TicketStatus,
 } from "../types";
 import { CATEGORY_LABELS, PRIORITY_LABELS, STATUS_LABELS } from "../types";
-import { statusAvailability } from "../lib/ticketUi";
+import { statusAvailability, describeConfidence } from "../lib/ticketUi";
 import { useAuth } from "../App";
 
 const PRIORITIES: TicketPriority[] = ["low", "normal", "high", "urgent"];
@@ -28,6 +28,7 @@ export default function TicketDetailPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [aiUnavailable, setAiUnavailable] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const confidence = ticket?.ai_confidence ? describeConfidence(ticket.ai_confidence) : { pct: 0, level: "low", text: "Chưa có đánh giá AI" };
 
   const load = useCallback(() => {
     api<TicketDetail>(`/api/tickets/${id}`)
@@ -209,7 +210,7 @@ export default function TicketDetailPage() {
           {ticket.ai_summary ? (
             <>
               <p>{ticket.ai_summary}</p>
-              <p className="hint">Confidence: {(100 * (ticket.ai_confidence ?? 0)).toFixed(0)}%</p>
+              <p data-testid="ai-confidence" className={`hint confidence-${confidence.level}`}>{confidence.text}</p>
             </>
           ) : (
             <p className="hint">No AI analysis yet.</p>
