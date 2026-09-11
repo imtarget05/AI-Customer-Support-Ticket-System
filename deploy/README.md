@@ -27,6 +27,7 @@
 | `ENVIRONMENT` | `production` (enables Postgres-only + strict CORS fail-fast). |
 | `ALEMBIC_MIGRATE` | `true` — idempotent `upgrade head` at boot. |
 | `AI_PROVIDER` / `AI_EMBED_PROVIDER` | `stub` / `bow` (Workers AI token revoked; real LLM is follow-up). |
+| `BOOTSTRAP_TOKEN` | Random ≥8 chars, set **before first deploy**; blank after bootstrap (§4). |
 | `CORS_ORIGINS` | Set AFTER Pages deploy: `https://<app>.pages.dev`, then redeploy API. |
 
 ## 3. Verify API health + migrate
@@ -34,15 +35,26 @@
 - Health: `GET https://<api>.onrender.com/api/health` → `{"status":"ok"}` (503 = DB/migration not ready, check logs for `upgrade head`).
 - Migrations run automatically at boot; concurrent instances are lock-guarded. Do not expose the DB port publicly.
 
-## 4. Seed agent account (once)
+## 4. Bootstrap the first agent (once)
 
-Render dashboard → service Shell:
+Free plans have **no Shell/SSH access**, so `python -m app.seed` won't run there.
+The app ships a one-time `/api/auth/bootstrap` endpoint guarded by `BOOTSTRAP_TOKEN`.
+
+1. Before the first deploy, set `BOOTSTRAP_TOKEN=<random ≥8 chars>` (keep it secret;
+   `python3 -c "import secrets; print(secrets.token_urlsafe(32))"`).
+2. After the service is live, create the agent with one call:
 
 ```bash
-python -m app.seed
+curl -X POST https://<api>.onrender.com/api/auth/bootstrap \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Support Admin","email":"admin@<your-domain>","password":"<strong-password>","setup_token":"<BOOTSTRAP_TOKEN>"}'
+# -> 201 {access_token, user:{role:"agent"}}
 ```
 
-This creates `agent@supportdesk.dev` (+ demo customers for manual testing). It seeds **users only** — no demo tickets on prod. Change the agent password after first login (or rotate via DB).
+3. The endpoint is strictly one-time: a second valid call returns 409 (agent exists),
+   a wrong token returns 403. After bootstrapping, set `BOOTSTRAP_TOKEN=""` (or remove it)
+   and redeploy so the route is disabled entirely.
+4. Seeded demo accounts/tickets are local-only (`python -m app.seed`) — never run on prod.
 
 ## 5. Deploy frontend on Cloudflare Pages
 
