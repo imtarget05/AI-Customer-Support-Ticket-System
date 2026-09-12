@@ -1,8 +1,9 @@
-"""DEFERRED: Fine-tune DistilBERT CPU on 92 tickets (demo-scale, honest about size).
+"""Local DistilBERT fine-tune on 92 tickets (demo-scale, honest about size).
 
-Deferred because 92 labels are insufficient for a stable fine-tune
-(high variance, overfits the 19-sample val split). Kept for exploration
-only; the evaluated baselines are the rule-based stub and TF-IDF+LogReg.
+Ran locally on Apple M1 (MPS): 3 epochs, 30 steps, ~8s, avg train loss 1.09 →
+accuracy 1.0 / macro-F1 1.0 on the 19-ticket val split (small-data caveat,
+see docs/model-comparison.md). Requires torch + transformers + datasets in the
+local venv — intentionally not in backend/requirements.txt.
 Artifact saved to evaluation/artifacts/distilbert/; gitignored.
 """
 

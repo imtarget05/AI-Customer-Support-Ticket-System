@@ -16,8 +16,9 @@ reply — the human agent reviews, edits, and sends.
   **93.5% / 0.94 macro-F1**, TF-IDF + LogReg **1.0 / 1.0** (same repo, artifact
   gitignored), Llama 3.1 8B **79.3% / 0.78** — the baselines win, and the report
   says so honestly.
-- DistilBERT fine-tune **deferred**: 92 labels insufficient for stable
-  fine-tune — see `docs/model-comparison.md`.
+- **DistilBERT fine-tuned locally** on the same 92-ticket dataset (3 epochs,
+  ~8s on Apple M1): 1.0 / 1.0 on the 19-ticket val split — same small-data
+  caveat as the TF-IDF baseline; see `docs/model-comparison.md`.
 - **Failure-isolated UX.** When AI is down, the UI shows an explanatory banner
   and the ticket stays fully usable — fail closed on AI, not on the workflow.
 - **133 pytest cases (1 skipped)**: auth, authorization, state machine, CRUD, boundaries,

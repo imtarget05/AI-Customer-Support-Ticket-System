@@ -1,6 +1,17 @@
 # Artifacts and data for eval (not for commit)
 evaluation/artifacts/
 evaluation/data/
+evaluation/__pycache__/
+
+# Python bytecode
+**/__pycache__/
+**/*.py[cod]
+
+# macOS
+.DS_Store
+
+# Cloudflare wrangler local state
+.wrangler/
 
 # Local SQLite databases (created by dev/test/alembic)
 *.db
@@ -37,3 +48,4 @@ opencode.jsonc
 skill-observations/
 .impeccable/
 .codegraph/
+docs/reference-configs/

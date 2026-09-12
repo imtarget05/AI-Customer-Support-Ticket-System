@@ -1,4 +1,4 @@
-"""Model comparison tests (stub vs TF-IDF; DistilBERT deferred, see docs/model-comparison.md)."""
+"""Model comparison tests (stub vs TF-IDF vs local DistilBERT, see docs/model-comparison.md)."""
 
 import json
 import pytest
@@ -18,10 +18,10 @@ def test_baseline_trains_and_scores():
 
 
 def test_transformer_smokes_when_artifact_exists():
-    """DistilBERT deferred (92 labels insufficient); skip without local exploration artifact."""
+    """Smoke the locally fine-tuned DistilBERT artifact; skips on fresh checkout (artifact gitignored)."""
     art = EVAL / "artifacts/distilbert/config.json"
     if not art.exists():
-        pytest.skip("DistilBERT deferred: 92 labels insufficient for stable fine-tune")
+        pytest.skip("DistilBERT artifact not present (gitignored); fine-tune locally via train_transformer.py")
     from train_transformer import evaluate_transformer
     out = evaluate_transformer()
     assert 0.0 <= out["accuracy"] <= 1.0

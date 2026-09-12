@@ -80,11 +80,11 @@ AI_PROVIDER=stub python evaluation/evaluate.py
 |---|---|---|
 | Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
 | TF-IDF + LogReg (this repo) | **1.0** | **1.0** |
-| DistilBERT fine-tune | deferred | deferred |
+| DistilBERT fine-tune (local, 3 epochs) | **1.0** | **1.0** |
 | Llama 3.1 8B (via Cloudflare) | **79.3%** | **0.78** |
 
-Honest note: on this narrow 5-way taxonomy the rule-based stub beats the 8B LLM (confusions cluster on refund↔payment); TF-IDF's 1.0 is dataset-specific (73/92 train, 19/92 val, artifact gitignored) and DistilBERT is deferred — 92 labels are insufficient for a stable fine-tune.
+Honest note: on this narrow 5-way taxonomy the rule-based stub beats the 8B LLM (confusions cluster on refund↔payment). TF-IDF and the local DistilBERT fine-tune both score 1.0 on the 19-ticket val split — perfect scores with 92 labels are dataset-specific, not SOTA claims; the value is the measured comparison itself.
 
 ## Docs
 
-- [Product spec](docs/spec.md) · [Model comparison](docs/model-comparison.md) · [Email setup](docs/email-setup.md) · [Recruiter snapshot](docs/recruiter-snapshot.md)
+- [Product spec](docs/spec.md) · [Model comparison](docs/model-comparison.md) · [Interview Q&A](docs/interview-qa.md) · [Email setup](docs/email-setup.md) · [Recruiter snapshot](docs/recruiter-snapshot.md)

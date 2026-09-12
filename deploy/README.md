@@ -101,3 +101,57 @@ curl -X POST https://<api>.onrender.com/api/auth/bootstrap \
 - Free-tier sleep: API cold-starts ~30–60s after idle; Pages shows its loading state meanwhile. Upgrade to Starter if always-on is needed.
 - First Docker build is slow (torch/sentence-transformers). Keep `AI_EMBED_PROVIDER=bow` on free tier to avoid OOM.
 - `VITE_API_URL` is bake-time: any backend URL change needs a Pages rebuild + redeploy.
+
+---
+
+## 10. CI/CD (GitHub Actions)
+
+Two workflows: **CI** (`.github/workflows/ci.yml` — already live) runs on every push to `main`/`feat/**` and PRs. **CD** (`.github/workflows/deploy.yml` — new) runs only after CI passes on `main`, or on manual dispatch.
+
+### How it works
+
+```
+push to main → CI (pytest + build + leak scan + alembic + eval smoke)
+                 │
+                 └── success ─→ CD:
+                     ├── backend job: build/push Docker image → GHCR → trigger Render redeploy → poll /api/health
+                     └── frontend job: build → deploy to Cloudflare Pages
+```
+
+- CI jobs: `backend` (pytest, secret scan, alembic, eval smoke) + `frontend` (npm build + tests).
+- CD triggers: `workflow_run` (CI completed successfully on `main`) + `workflow_dispatch` (manual trigger from Actions UI).
+- Backend CD: builds the Docker image via `docker/build-push-action`, pushes to GHCR tagged with `sha-<commit>` + `latest`, then calls Render deploy API and polls `/api/health` until it returns 200 (up to 6 minutes).
+- Frontend CD: rebuilds the frontend and deploys to Cloudflare Pages via `wrangler-action`.
+- **Fail-closed**: if CI fails, CD does not run. If Render redeploy fails, the job fails and no further steps run.
+
+### Required repository secrets
+
+Go to **Settings → Secrets and variables → Actions → New repository secret** and add:
+
+| Secret | Where to get it | Used by |
+|---|---|---|
+| `RENDER_API_KEY` | Render dashboard → Account Settings → API Keys → **Create API Key** (needs **Service → Deploy** permission) | `deploy.yml` backend job — redeploy + health poll |
+| `RENDER_SERVICE_ID` | Render dashboard → your service → scroll to bottom → **Service ID** (looks like `srv-xxxx`) | `deploy.yml` backend job — target service |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens → **Create Token** → choose “Cloudflare Pages: Edit” template (or custom: `Pages → Edit`, `Account → Cloudflare Pages` read) | `deploy.yml` frontend job — Pages deploy |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard URL: `https://dash.cloudflare.com/<account-id>` — copy the long hex ID | `deploy.yml` frontend job — Pages project scope |
+
+> The GitHub PAT that was pasted in chat **cannot** deploy to Render — Render's deploy API uses `RENDER_API_KEY`, not a GitHub token. If you still have that PAT active, **revoke/rotate it** in your GitHub settings. Never commit a PAT, even in a workaround script.
+
+### First-time setup
+
+1. Add the four secrets above.
+2. Push a commit to `main` (or trigger manually from the Actions tab) → CI runs first.
+3. When CI turns green, CD fires automatically and:
+   - Backend image is built/pushed to GHCR (first push takes a few minutes due to torch).
+   - Render redeploys the service from the new image.
+   - `/api/health` is polled until it returns `{"status":"ok"}`.
+   - Frontend is rebuilt and deployed to Cloudflare Pages.
+4. If any secret is missing, the relevant CD step is skipped with a clear log message — the workflow won't fail on missing secrets, it just won't deploy.
+
+### Manual trigger
+
+Go to **Actions → CD → Run workflow → Branch: main → Run workflow**. Useful for re-deploying without a code change (e.g. after changing env vars in Render dashboard).
+
+### Rollback via CD
+
+Render keeps a deploy history: **Actions → CD → find the last successful run → re-run** will redeploy the same image. To go back to an older image, tag it manually in GHCR or use Render's deployment history UI.
