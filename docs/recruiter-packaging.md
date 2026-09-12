@@ -9,12 +9,15 @@
   prompt steering, refund-commitment drafts, hallucinated policy/order claims,
   and malformed LLM output — returning 502 and leaving the ticket untouched.
 - Measured the classifier on a 92-ticket labeled dataset instead of assuming it
-  works: rule-based stub 93.5% / 0.94 macro-F1, Llama 3.1 8B 79.3% / 0.78;
+  works: rule-based stub 93.5% / 0.94 macro-F1, TF-IDF + LogReg 1.0 / 1.0,
+  Llama 3.1 8B 79.3% / 0.78;
   failures cluster on refund vs payment and authentication vs technical.
+- DistilBERT fine-tune deferred: 92 labels insufficient for stable fine-tune
+  (see `docs/model-comparison.md`).
 - Added provider reliability handling (15s timeout, one retry on transient
   failures) and a failure-isolated UI so the ticket stays usable when AI is down.
 - Ran adversarial manual testing (steering, refund commitment, hallucinated
-  grounding) and end-to-end regression after fixes; 55 pytest cases cover auth,
+  grounding) and end-to-end regression after fixes; 133 pytest cases (1 skipped) cover auth,
   authorization, the ticket state machine, CRUD, boundaries, and AI failure modes.
 - Caught and fixed a real bug during manual screenshot testing that automated
   tests missed: the detail page white-screened after AI mutations because the

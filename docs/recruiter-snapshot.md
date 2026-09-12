@@ -16,9 +16,11 @@ reply — the human agent reviews, edits, and sends.
   **93.5% / 0.94 macro-F1**, TF-IDF + LogReg **1.0 / 1.0** (same repo, artifact
   gitignored), Llama 3.1 8B **79.3% / 0.78** — the baselines win, and the report
   says so honestly.
+- DistilBERT fine-tune **deferred**: 92 labels insufficient for stable
+  fine-tune — see `docs/model-comparison.md`.
 - **Failure-isolated UX.** When AI is down, the UI shows an explanatory banner
   and the ticket stays fully usable — fail closed on AI, not on the workflow.
-- **95 pytest cases**: auth, authorization, state machine, CRUD, boundaries,
+- **133 pytest cases (1 skipped)**: auth, authorization, state machine, CRUD, boundaries,
   AI behavior, guardrail failure modes. No API key needed to run them.
 - **Adversarial regression documented** in `docs/qa-followup-ai-guardrails.md`.
 - **Real bug caught by manual testing** (not pytest): the detail page
