@@ -77,7 +77,7 @@ discover → baseline → test design → execute →
 The AI guardrail + reliability fixes (refund-commit drafts, hallucinated
 grounding, steerable triage, confidence over-reporting, missing timeout/retry)
 were driven by a manual test battery, fixed with end-to-end regression, and
-documented in `docs/qa-followup-ai-guardrails.md`. **89 pytest cases** cover
+documented in `docs/qa-followup-ai-guardrails.md`. **133 pytest cases** cover
 auth, authorization, ticket lifecycle (state machine), CRUD, boundaries,
 AI behavior and guardrail failure modes — no API key or external service needed.
 
@@ -87,6 +87,15 @@ AI behavior and guardrail failure modes — no API key or external service neede
 - `/agent` — agent dashboard: stats cards, ticket list with status filters
 - `/tickets/:id` — ticket detail: lifecycle controls, AI summary, suggested reply
   (use/edit/dismiss), similar resolved tickets, conversation thread
+
+## Two-way email
+
+Agent replies can also go out by email: `EMAIL_PROVIDER` (`stub` | `log` |
+`smtp`) controls delivery, and each message keeps a persisted `email_status`
+badge (`sent` / `failed` / `skipped_no_config`). Customer email replies arrive
+via `POST /api/webhooks/inbound-email`, verified with HMAC-SHA256
+(`INBOUND_WEBHOOK_SECRET`); a reply on a `WAITING` or `RESOLVED` ticket reopens
+it to `IN_PROGRESS`. Setup: [`docs/email-setup.md`](docs/email-setup.md).
 
 ## Stack
 
@@ -115,9 +124,11 @@ npm install && npm run dev         # http://localhost:5173 (proxies /api to :800
 ## Tests
 
 ```bash
-cd backend && pytest               # 89 tests, no API key / external services
+cd backend && pytest               # 133 tests (1 skipped), no API key / external services
 cd frontend && npm run build       # tsc strict + vite build
 ```
+
+CI runs pytest + frontend build on push via `.github/workflows/ci.yml`.
 
 ## Evaluation
 

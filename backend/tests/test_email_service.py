@@ -61,5 +61,29 @@ def test_smtp_failure_returns_failed_logged(monkeypatch, isolate_email_provider)
         assert result.status == "failed_logged"
 
 
+def test_smtp_success_returns_sent(monkeypatch, isolate_email_provider):
+    """SMTP success-path: returns sent, send_message called, Subject tagged."""
+    monkeypatch.setenv("EMAIL_PROVIDER", "smtp")
+    monkeypatch.setenv("SMTP_HOST", "smtp.example.com")
+    monkeypatch.setenv("SMTP_FROM", "noreply@example.com")
+    from app.config import Settings
+
+    fresh = Settings(
+        email_provider="smtp",
+        smtp_host="smtp.example.com",
+        smtp_from="noreply@example.com",
+    )
+    monkeypatch.setattr("app.services.email_service.settings", fresh)
+    with patch("app.services.email_service.smtplib.SMTP") as mock_smtp_class:
+        smtp_handle = mock_smtp_class.return_value.__enter__.return_value
+        result = send_agent_reply(
+            to_email="user@example.com", ticket_id=7, subject="Hi", body="Body text"
+        )
+        assert result.status == "sent"
+        assert smtp_handle.send_message.called
+        sent = smtp_handle.send_message.call_args[0][0]
+        assert sent["Subject"] == "[SupportDesk #7] Hi"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

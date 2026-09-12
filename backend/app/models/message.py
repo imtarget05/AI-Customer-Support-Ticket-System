@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Text
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -12,6 +12,9 @@ class Message(TimestampMixin, Base):
     ticket_id: Mapped[int] = mapped_column(ForeignKey("tickets.id"), index=True, nullable=False)
     sender_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
+    email_status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="skipped_no_config", server_default="skipped_no_config"
+    )
 
     ticket = relationship("Ticket", back_populates="messages")
     sender = relationship("User")

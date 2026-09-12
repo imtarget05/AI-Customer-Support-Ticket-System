@@ -122,6 +122,10 @@ class Settings:
     # One-time prod bootstrap secret. Empty = bootstrap endpoint disabled.
     bootstrap_token: str = os.getenv("BOOTSTRAP_TOKEN", "")
 
+    # Inbound webhook HMAC secret. Empty = skip signature check in dev/test
+    # (log warning); in deployment an empty secret rejects with 403.
+    inbound_webhook_secret: str = os.getenv("INBOUND_WEBHOOK_SECRET", "")
+
     cors_origins: list[str] = field(
         default_factory=lambda: _split_origins(
             os.getenv(

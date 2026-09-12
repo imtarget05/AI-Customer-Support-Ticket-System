@@ -140,4 +140,7 @@ def add_message(
             body=body.content,
         )
         message.email_status = result.status
+        db.add(message)
+        db.commit()
+        db.refresh(message)
     return MessageOut.model_validate(message)
