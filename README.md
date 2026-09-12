@@ -56,7 +56,7 @@ before it exists as a thread message, and every classification is logged to
 |---|---|---|
 | Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
 | TF-IDF + LogReg (this repo) | **1.0** | **1.0** | *trained on 73/92 train, evaluated on 19/92 val; artifact gitignored* |
-| DistilBERT (fine-tuned) | *pending* | *pending* | *3-epoch CPU fine-tune; artifact gitignored* |
+| DistilBERT fine-tune | deferred | deferred | 92 labels insufficient for stable fine-tune; MiniLM embeddings + TF-IDF+LogReg used instead |
 
 An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
 the 8B LLM (Llama 3.1 8B via Cloudflare: 79.3% / 0.78, whose confusions cluster
@@ -143,7 +143,7 @@ python evaluation/evaluate.py            # uses AI_PROVIDER from backend/.env
 |---|---|---|
 | Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
 | TF-IDF + LogReg (this repo) | **1.0** | **1.0** | *trained on 73/92 train, evaluated on 19/92 val; artifact gitignored* |
-| DistilBERT (fine-tuned) | *pending* | *pending* | *3-epoch CPU fine-tune; artifact gitignored* |
+| DistilBERT fine-tune | deferred | deferred | 92 labels insufficient for stable fine-tune; MiniLM embeddings + TF-IDF+LogReg used instead |
 
 An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
 the 8B LLM, whose confusions cluster on refund↔payment and authentication↔technical.
