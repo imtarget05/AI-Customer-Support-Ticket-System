@@ -5,6 +5,7 @@ on:
     branches: [main, "feat/**"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   backend:
@@ -28,6 +29,19 @@ jobs:
         run: |
           cd backend
           python -m pytest --tb=short
+        env:
+          AI_PROVIDER: stub
+      - name: Secret leak scan
+        run: |
+          ! grep -rniE 'sk-[A-Za-z0-9]{20,}|BEGIN.*PRIVATE|cfut_' --exclude-dir=__pycache__ --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.venv --exclude-dir=.codegraph --exclude-dir=.ai --exclude-dir=tasks --exclude=.env --exclude=.env.example --exclude=ci.yml .
+      - name: Alembic migration check
+        run: |
+          cd backend
+          python -m alembic history
+          python -m alembic upgrade head --sql > /dev/null
+      - name: Evaluation smoke (stub provider)
+        run: |
+          AI_PROVIDER=stub python evaluation/evaluate.py
 
   frontend:
     runs-on: ubuntu-latest
@@ -50,3 +64,7 @@ jobs:
         run: |
           cd frontend
           npm run build
+      - name: Run tests (if present)
+        run: |
+          cd frontend
+          npm test --if-present
