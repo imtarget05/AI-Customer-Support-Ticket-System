@@ -42,8 +42,8 @@ jobs:
           file: backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ toLower(github.repository) }}:${{ github.sha }}
-            ghcr.io/${{ toLower(github.repository) }}:latest
+            ghcr.io/imtarget05/supportdesk:${{ github.sha }}
+            ghcr.io/imtarget05/supportdesk:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
