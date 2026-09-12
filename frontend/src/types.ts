@@ -21,6 +21,7 @@ export interface Message {
   sender: User;
   content: string;
   created_at: string;
+  email_status?: string;  // sent | skipped_no_customer | skipped_no_config | failed_logged
 }
 
 export interface Ticket {

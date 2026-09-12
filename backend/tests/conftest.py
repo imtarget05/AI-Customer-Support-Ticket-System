@@ -9,6 +9,9 @@ _TMP_DIR = tempfile.mkdtemp(prefix="supportdesk-test-")
 os.environ["DATABASE_URL"] = f"sqlite:///{_TMP_DIR}/test.db"
 os.environ["JWT_SECRET"] = secrets.token_urlsafe(32)
 os.environ["AI_PROVIDER"] = "stub"
+os.environ.setdefault("EMAIL_PROVIDER", "stub")
+os.environ.setdefault("SMTP_HOST", "")
+os.environ.setdefault("SMTP_FROM", "")
 
 import pytest
 from fastapi.testclient import TestClient

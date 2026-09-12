@@ -294,6 +294,12 @@ export default function TicketDetailPage() {
                 {m.sender.role === "agent" ? "Hỗ trợ" : "Khách hàng"}
               </span>
               <p>{m.content}</p>
+              {m.email_status === "sent" && (
+                <span className="hint">✉️ đã gửi email cho khách</span>
+              )}
+              {m.email_status === "failed_logged" && (
+                <span className="hint">⚠️ email gửi lỗi — đã log, tin nhắn vẫn lưu</span>
+              )}
             </div>
           ))}
         </div>

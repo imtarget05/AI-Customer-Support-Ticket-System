@@ -2,7 +2,7 @@ import os
 import pytest
 from dataclasses import dataclass
 
-from backend.app.config import settings
+from app.config import settings
 
 
 @pytest.fixture(autouse=True)

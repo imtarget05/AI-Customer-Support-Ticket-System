@@ -11,6 +11,7 @@ export default function SupportPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [created, setCreated] = useState<Ticket | null>(null);
+  const [history, setHistory] = useState<Ticket[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -25,6 +26,7 @@ export default function SupportPage() {
         body.customer_name = name;
       }
       const ticket = await api<Ticket>("/api/tickets", { method: "POST", body });
+      setHistory((h) => [ticket, ...h]);
       setCreated(ticket);
       setSubject("");
       setDescription("");
@@ -37,29 +39,29 @@ export default function SupportPage() {
     }
   }
 
-  if (created) {
-    return (
-      <div className="card narrow">
-        <h1>Ticket #{created.id} created ✅</h1>
-        <p>
-          We received your request: <strong>{created.subject}</strong>. Our team will get back to
-          you soon.
-        </p>
-        <p>
-          <Link to={`/tickets/${created.id}`}>View ticket status →</Link>
-        </p>
-        <button onClick={() => setCreated(null)}>Submit another ticket</button>
-      </div>
-    );
-  }
-
   return (
     <div className="card narrow">
       <h1>Submit a Ticket</h1>
+      {user && (
+        <p className="hint">Bạn đang gửi với tài khoản <strong>{user.email}</strong> — không cần nhập email.</p>
+      )}
       {!user && (
-        <p className="hint">
-          Have an account? <Link to="/login">Log in</Link> — or just leave your email below.
-        </p>
+        <>
+          <p className="hint">Gửi ẩn danh — nhập email để nhận phản hồi</p>
+          <label>
+            Your email
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Your name (optional)
+            <input value={name} onChange={(e) => setName(e.target.value)} />
+          </label>
+        </>
       )}
       <form onSubmit={onSubmit}>
         <label>
@@ -105,6 +107,28 @@ export default function SupportPage() {
           {busy ? "Submitting…" : "Submit ticket"}
         </button>
       </form>
+      {created && (
+        <div data-testid="success-card" className="card narrow">
+          <h1>Ticket #{created.id} created ✅</h1>
+          <p>
+            We received your request: <strong>{created.subject}</strong>. Our team will get back to
+            you soon.
+          </p>
+          <p>
+            <Link to={`/tickets/${created.id}`}>Xem trạng thái →</Link>
+          </p>
+        </div>
+      )}
+      {history.length > 0 && (
+        <div data-testid="history-panel" className="card narrow">
+          <h3>Lịch sử gửi ticket</h3>
+          <ul>
+            {history.map((t) => (
+              <li key={t.id}>#{t.id} - {t.subject}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

@@ -15,6 +15,7 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+export { AuthContext };
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
