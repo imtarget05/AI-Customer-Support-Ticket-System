@@ -1,5 +1,8 @@
-"""Fine-tune DistilBERT CPU on 92 tickets (demo-scale, honest about size).
+"""DEFERRED: Fine-tune DistilBERT CPU on 92 tickets (demo-scale, honest about size).
 
+Deferred because 92 labels are insufficient for a stable fine-tune
+(high variance, overfits the 19-sample val split). Kept for exploration
+only; the evaluated baselines are the rule-based stub and TF-IDF+LogReg.
 Artifact saved to evaluation/artifacts/distilbert/; gitignored.
 """
 
