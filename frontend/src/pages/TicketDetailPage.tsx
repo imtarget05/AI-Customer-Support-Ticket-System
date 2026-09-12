@@ -10,16 +10,8 @@ import type {
   TicketStatus,
 } from "../types";
 import { CATEGORY_LABELS, PRIORITY_LABELS, STATUS_LABELS } from "../types";
+import { statusAvailability, describeConfidence } from "../lib/ticketUi";
 import { useAuth } from "../App";
-
-// Mirror of the backend state machine (the backend is the enforcer).
-const NEXT_STATUSES: Record<TicketStatus, TicketStatus[]> = {
-  open: ["in_progress"],
-  in_progress: ["waiting", "resolved"],
-  waiting: ["in_progress"],
-  resolved: ["closed"],
-  closed: [],
-};
 
 const PRIORITIES: TicketPriority[] = ["low", "normal", "high", "urgent"];
 
@@ -36,6 +28,7 @@ export default function TicketDetailPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [aiUnavailable, setAiUnavailable] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const confidence = ticket?.ai_confidence ? describeConfidence(ticket.ai_confidence) : { pct: 0, level: "low", text: "Chưa có đánh giá AI" };
 
   const load = useCallback(() => {
     api<TicketDetail>(`/api/tickets/${id}`)
@@ -160,7 +153,7 @@ export default function TicketDetailPage() {
       </h1>
       {error && <p className="error">{error}</p>}
       {notice && <p className="notice">{notice}</p>}
-      {aiUnavailable && <p className="notice">{aiUnavailable}</p>}
+      {aiUnavailable && <p data-testid="ai-unavailable" role="alert" className="ai-unavailable">{aiUnavailable}</p>}
 
       <div className="detail-grid">
         <div className="card">
@@ -180,13 +173,19 @@ export default function TicketDetailPage() {
           {isAgent && (
             <>
               <h3>Agent controls</h3>
-              <p className="btn-row">
-                {NEXT_STATUSES[ticket.status].map((s) => (
-                  <button key={s} disabled={busy} onClick={() => transition(s)}>
-                    → {STATUS_LABELS[s]}
-                  </button>
-                ))}
-                {ticket.status === "closed" && <em>Closed (terminal)</em>}
+              <p className="btn-row" data-testid="status-flow">
+                {statusAvailability(ticket.status).map(
+                  ({ status: s, enabled, reason, current }) => (
+                    <button
+                      key={s}
+                      disabled={busy || !enabled}
+                      title={reason || undefined}
+                      onClick={() => current ? null : transition(s)}
+                    >
+                      {current ? "●" : "→"} {STATUS_LABELS[s]}
+                    </button>
+                  )
+                )}
               </p>
               <label className="inline">
                 Priority:{" "}
@@ -211,7 +210,7 @@ export default function TicketDetailPage() {
           {ticket.ai_summary ? (
             <>
               <p>{ticket.ai_summary}</p>
-              <p className="hint">Confidence: {(100 * (ticket.ai_confidence ?? 0)).toFixed(0)}%</p>
+              <p data-testid="ai-confidence" className={`hint confidence-${confidence.level}`}>{confidence.text}</p>
             </>
           ) : (
             <p className="hint">No AI analysis yet.</p>
@@ -280,15 +279,24 @@ export default function TicketDetailPage() {
       <div className="card">
         <h2>Conversation</h2>
         {ticket.messages.length === 0 && <p className="hint">No replies yet.</p>}
-        {ticket.messages.map((m) => (
-          <div key={m.id} className={`message message-${m.sender.role}`}>
-            <strong>{m.sender.name}</strong>{" "}
-            <span className="hint">
-              ({m.sender.role}) · {new Date(m.created_at).toLocaleString()}
-            </span>
-            <p>{m.content}</p>
-          </div>
-        ))}
+        <div className="message-list" style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {ticket.messages.map((m) => (
+            <div
+              key={m.id}
+              className={`message message-${m.sender.role}`}
+              style={{ maxWidth: "75%" }}
+            >
+              <strong>{m.sender.name}</strong>{" "}
+              <span className="hint">
+                ({m.sender.role}) · {new Date(m.created_at).toLocaleString()}
+              </span>
+              <span className={`role-badge-${m.sender.role}`}>
+                {m.sender.role === "agent" ? "Hỗ trợ" : "Khách hàng"}
+              </span>
+              <p>{m.content}</p>
+            </div>
+          ))}
+        </div>
 
         {user ? (
           ticket.status !== "closed" ? (

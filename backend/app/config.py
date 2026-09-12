@@ -93,6 +93,15 @@ class Settings:
     # Embedder: "bow" (hashed bag-of-words, offline default) | "hf" (sentence-transformers, lazy-load, BoW fallback)
     ai_embed_provider: str = os.getenv("AI_EMBED_PROVIDER", "bow")
 
+    # Email provider: "stub" | "log" | "smtp"
+    email_provider: str = os.getenv("EMAIL_PROVIDER", "stub")
+    smtp_host: str = os.getenv("SMTP_HOST", "")
+    smtp_port: int = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user: str = os.getenv("SMTP_USER", "")
+    smtp_pass: str = os.getenv("SMTP_PASS", "")
+    smtp_from: str = os.getenv("SMTP_FROM", "")
+    smtp_timeout_s: float = float(os.getenv("SMTP_TIMEOUT_S", "5"))
+
     # Workflow confidence thresholds
     workflow_high_confidence: float = float(os.getenv("WORKFLOW_HIGH_CONFIDENCE", "0.85"))
     workflow_low_confidence: float = float(os.getenv("WORKFLOW_LOW_CONFIDENCE", "0.60"))
