@@ -40,6 +40,7 @@ class MessageOut(BaseModel):
     sender: UserPublic
     content: str
     created_at: datetime
+    email_status: str = "skipped_no_config"  # sent | skipped_no_customer | skipped_no_config | failed_logged
 
 
 class TicketOut(BaseModel):

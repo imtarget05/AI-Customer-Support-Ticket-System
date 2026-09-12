@@ -14,7 +14,7 @@ from app.schemas import (
     TicketPage,
     TicketUpdate,
 )
-from app.services import ticket_service
+from app.services import ticket_service, email_service as email_svc
 from app.services.state_machine import InvalidTransition
 
 router = APIRouter(prefix="/api/tickets", tags=["tickets"])
@@ -132,4 +132,12 @@ def add_message(
         message = ticket_service.add_message(db, ticket, user, body.content)
     except ticket_service.TicketRuleViolation as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+    if user.role == "agent":
+        result = email_svc.send_agent_reply(
+            to_email=ticket.customer.email if ticket.customer else None,
+            ticket_id=ticket.id,
+            subject=ticket.subject,
+            body=body.content,
+        )
+        message.email_status = result.status
     return MessageOut.model_validate(message)
