@@ -46,6 +46,10 @@ jobs:
             ghcr.io/imtarget05/supportdesk:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false
+          build-args: |
+            BUILDKIT_PROGRESS=plain
 
       - name: Redeploy on Render
         env:
