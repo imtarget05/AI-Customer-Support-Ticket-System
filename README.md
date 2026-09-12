@@ -1,110 +1,47 @@
 # SupportDesk — AI-Assisted Ticket Management
 
-A full-stack support ticket system with AI-assisted classification, similar-ticket
-retrieval, and response drafting, with human review and failure-isolated AI
-integration.
+A full-stack support ticket system where AI **assists agents, never decides**: it triages, drafts, and retrieves — the agent always sends, resolves, and closes.
 
-SupportDesk is a support ticket system where AI **assists agents, never decides**:
-auto triage (category / priority / summary / confidence), suggested replies, and
-similar resolved tickets. The agent always sends, resolves, and closes — the AI
-suggests, the human decides.
-
-## Screenshots
+## Demo
 
 | | |
 |---|---|
 | ![Agent dashboard](docs/screenshots/1-agent-dashboard.png) | ![Ticket detail with AI](docs/screenshots/2-ticket-detail-ai.png) |
-| ![AI failure isolation](docs/screenshots/3-ai-failure-isolation.png) | ![QA evidence](docs/screenshots/4-qa-evidence.png) |
+| Agent dashboard (`/agent`) — stats, filters, AI triage | Ticket detail (`/tickets/:id`) — AI summary, suggested reply, similar tickets |
 
-- **Agent dashboard** — ticket list with AI triage (category & priority) and status
-- **Ticket detail** — AI summary with confidence, similar resolved tickets, and a
-  suggested reply the agent reviews, edits, and sends
-- **AI failure isolation** — when the AI provider fails, the UI explains it and the
-  ticket stays fully usable
-- **QA evidence** — test and evaluation output captured from live runs
-
-(Direct links: [`docs/spec.md`](docs/spec.md) · [`docs/qa-followup-ai-guardrails.md`](docs/qa-followup-ai-guardrails.md))
+Customers file from `/`. More captures: [AI failure isolation](docs/screenshots/3-ai-failure-isolation.png) · [QA evidence](docs/screenshots/4-qa-evidence.png).
 
 ## What the AI does
 
-1. **Classifies** incoming support tickets (category, priority, summary, confidence)
-2. **Finds similar** resolved tickets via embedding + cosine similarity
-3. **Generates a response draft** for the agent to review
-4. **Requires human review** before anything is sent
+- **Classifies** new tickets (category, priority, summary, confidence)
+- **Finds similar** resolved tickets via embeddings + cosine similarity, with scores
+- **Drafts a reply** grounded in the ticket, similar cases, and support policy
+- **Logs every prediction** to `ai_predictions` for review and evaluation
 
-## AI Reliability
+Suggestion-only: nothing is sent, resolved, or closed by AI — the agent uses, edits, or dismisses each suggestion explicitly.
 
-The AI layer is treated as **untrusted**. Its raw output is validated and
-guard-railed before it can reach an agent, and we test it adversarially:
+## AI reliability
 
-- **Prompt steering** — a ticket that tries to override the AI is refused
-- **Refund commitments** — the AI can never promise refunds/compensation
-- **Hallucinated policy** — the AI can't cite policies/FAQs it never saw
-- **Fabricated order info** — no invented order/account claims
-- **Provider failures** — timeout/5xx/429 retried once; recurring failures return
-  502 and leave the ticket untouched
+The AI layer is treated as **untrusted**; output is schema-validated and guard-railed before reaching an agent:
 
-Unsafe or invalid AI output is **rejected rather than shown to agents**. When AI is
-down, the ticket still works and is handled manually (fail closed on AI, no loss
-of the business operation).
+- **Prompt steering** — tickets attempting to override the AI are refused
+- **Refund commitments** — the AI can never promise refunds or compensation
+- **Hallucinated policy** — no citing policies or FAQs it never saw
+- **Fabricated order info** — no invented order or account claims
+- **Provider failures** — timeout/5xx/429 retried once, then 502 with the ticket untouched
 
-Human in the loop is enforced end-to-end: the agent edits/approves any AI draft
-before it exists as a thread message, and every classification is logged to
-`ai_predictions` for review and evaluation.
-
-| Provider | Accuracy | Macro-F1 |
-|---|---|---|
-| Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
-| TF-IDF + LogReg (this repo) | **1.0** | **1.0** | *trained on 73/92 train, evaluated on 19/92 val; artifact gitignored* |
-| DistilBERT fine-tune | deferred | deferred | 92 labels insufficient for stable fine-tune; MiniLM embeddings + TF-IDF+LogReg used instead |
-
-An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
-the 8B LLM (Llama 3.1 8B via Cloudflare: 79.3% / 0.78, whose confusions cluster
-on refund↔payment and authentication↔technical), and the report says so honestly.
-Measuring both providers against the same labels is the point — the classifier
-is evaluated, not assumed to work.
-
-## Quality process
-
-AI features were tested adversarially, not just on happy paths. The workflow:
-
-```
-discover → baseline → test design → execute →
-  adversarial (steering, refund, hallucination) →
-    evidence → bug triage → fix → regression → verdict
-```
-
-The AI guardrail + reliability fixes (refund-commit drafts, hallucinated
-grounding, steerable triage, confidence over-reporting, missing timeout/retry)
-were driven by a manual test battery, fixed with end-to-end regression, and
-documented in `docs/qa-followup-ai-guardrails.md`. **133 pytest cases** cover
-auth, authorization, ticket lifecycle (state machine), CRUD, boundaries,
-AI behavior and guardrail failure modes — no API key or external service needed.
-
-## Screens
-
-- `/` — customer ticket form (with account, or anonymous with email)
-- `/agent` — agent dashboard: stats cards, ticket list with status filters
-- `/tickets/:id` — ticket detail: lifecycle controls, AI summary, suggested reply
-  (use/edit/dismiss), similar resolved tickets, conversation thread
+Fail closed: unsafe or invalid output is rejected, never shown; when AI is down the ticket stays fully usable. Details: [`docs/qa-followup-ai-guardrails.md`](docs/qa-followup-ai-guardrails.md).
 
 ## Two-way email
 
-Agent replies can also go out by email: `EMAIL_PROVIDER` (`stub` | `log` |
-`smtp`) controls delivery, and each message keeps a persisted `email_status`
-badge (`sent` / `failed` / `skipped_no_config`). Customer email replies arrive
-via `POST /api/webhooks/inbound-email`, verified with HMAC-SHA256
-(`INBOUND_WEBHOOK_SECRET`); a reply on a `WAITING` or `RESOLVED` ticket reopens
-it to `IN_PROGRESS`. Setup: [`docs/email-setup.md`](docs/email-setup.md).
+Agent replies can go out by email and customer replies reopen `WAITING`/`RESOLVED` tickets to `IN_PROGRESS`. Setup: [`docs/email-setup.md`](docs/email-setup.md).
 
 ## Stack
 
-- **Backend**: FastAPI + SQLAlchemy (SQLite local, PostgreSQL via `DATABASE_URL`), JWT auth (PBKDF2), pytest.
-- **AI**: three pluggable providers via `AI_PROVIDER` — `stub` (offline rule-based, no key), `cloudflare` (Workers AI, Llama 3.1), `openai` (any /v1 endpoint). LLM output is schema-validated; malformed output → 502 and ticket data is left untouched. Credentials live in `backend/.env` (gitignored) — see `backend/.env.example`.
-- **Retrieval**: hashed bag-of-words embeddings + cosine similarity over
-  resolved/closed tickets ("light RAG" reference, not a chatbot). Lazy-loaded
-  sentence-transformers available via `AI_EMBED_PROVIDER=hf`.
-- **Frontend**: Vite + React 18 + TypeScript.
+- **Backend** — FastAPI + SQLAlchemy (SQLite local, PostgreSQL via `DATABASE_URL`), JWT auth, pytest
+- **AI** — pluggable via `AI_PROVIDER` (`stub` offline rule-based · `cloudflare` Workers AI Llama 3.1 · `openai` any /v1 endpoint); malformed output → 502, ticket untouched
+- **Retrieval** — hashed bag-of-words embeddings + cosine similarity over resolved tickets; sentence-transformers via `AI_EMBED_PROVIDER=hf`
+- **Frontend** — Vite + React 18 + TypeScript
 
 ## Run
 
@@ -113,7 +50,7 @@ it to `IN_PROGRESS`. Setup: [`docs/email-setup.md`](docs/email-setup.md).
 cd backend
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m app.seed                 # demo: agent@supportdesk.dev / agent1234
+python -m app.seed                 # demo: agent@supportdesk.dev / agent1234 (agent), casey@example.com / customer1234 (customer)
 uvicorn app.main:app --reload      # docs: http://localhost:8000/docs
 
 # frontend (second terminal)
@@ -121,32 +58,33 @@ cd frontend
 npm install && npm run dev         # http://localhost:5173 (proxies /api to :8000)
 ```
 
-## Tests
+Credentials live in `backend/.env` (gitignored) — see `backend/.env.example`.
+
+## Tests & Evaluation
 
 ```bash
-cd backend && pytest               # 133 tests (1 skipped), no API key / external services
+cd backend && pytest               # 133 tests (1 skipped), no API key or external services
 cd frontend && npm run build       # tsc strict + vite build
 ```
 
 CI runs pytest + frontend build on push via `.github/workflows/ci.yml`.
+Guardrail battery and failure-mode evidence: [`docs/qa-followup-ai-guardrails.md`](docs/qa-followup-ai-guardrails.md).
 
-## Evaluation
-
-`evaluation/tickets.json` holds 92 labeled tickets; `evaluation/evaluate.py`
-reports accuracy, macro-F1 and per-category F1 (pure stdlib):
+`evaluation/tickets.json` holds 92 labeled tickets; `evaluation/evaluate.py` reports accuracy, macro-F1, and per-category F1 (pure stdlib):
 
 ```bash
-python evaluation/evaluate.py            # uses AI_PROVIDER from backend/.env
+AI_PROVIDER=stub python evaluation/evaluate.py
 ```
 
 | Provider | Accuracy | Macro-F1 |
 |---|---|---|
 | Rule-based stub (`AI_PROVIDER=stub`) | **93.5%** | **0.94** |
-| TF-IDF + LogReg (this repo) | **1.0** | **1.0** | *trained on 73/92 train, evaluated on 19/92 val; artifact gitignored* |
-| DistilBERT fine-tune | deferred | deferred | 92 labels insufficient for stable fine-tune; MiniLM embeddings + TF-IDF+LogReg used instead |
+| TF-IDF + LogReg (this repo) | **1.0** | **1.0** |
+| DistilBERT fine-tune | deferred | deferred |
+| Llama 3.1 8B (via Cloudflare) | **79.3%** | **0.78** |
 
-An honest result: on this narrow 5-way taxonomy the rule-based baseline beats
-the 8B LLM, whose confusions cluster on refund↔payment and authentication↔technical.
-Measuring both providers against the same labels is the point — the classifier
-is evaluated, not assumed to work.
+Honest note: on this narrow 5-way taxonomy the rule-based stub beats the 8B LLM (confusions cluster on refund↔payment); TF-IDF's 1.0 is dataset-specific (73/92 train, 19/92 val, artifact gitignored) and DistilBERT is deferred — 92 labels are insufficient for a stable fine-tune.
 
+## Docs
+
+- [Product spec](docs/spec.md) · [Model comparison](docs/model-comparison.md) · [Email setup](docs/email-setup.md) · [Recruiter snapshot](docs/recruiter-snapshot.md)
