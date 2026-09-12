@@ -43,7 +43,7 @@ def train_transformer(epochs: int = 3):
         report_to="none",
     )
 
-    trainer = Trainer(model=model, args=args, train_dataset=tr, eval_dataset=va, tokenizer=tok)
+    trainer = Trainer(model=model, args=args, train_dataset=tr, eval_dataset=va, processing_class=tok)
     trainer.train()
     model.save_pretrained(EVAL / "artifacts" / "distilbert")
     tok.save_pretrained(EVAL / "artifacts" / "distilbert")
