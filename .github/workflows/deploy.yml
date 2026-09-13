@@ -66,7 +66,7 @@ jobs:
             -H "Authorization: Bearer ${RENDER_API_KEY}")
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
           BODY=$(echo "$RESPONSE" | sed '$d')
-          if [ "$HTTP_CODE" != "201" ] && [ "$HTTP_CODE" != "200" ]; then
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ] && [ "$HTTP_CODE" != "202" ]; then
             echo "ERROR: Render redeploy failed (HTTP ${HTTP_CODE})"
             echo "$BODY"
             exit 1
