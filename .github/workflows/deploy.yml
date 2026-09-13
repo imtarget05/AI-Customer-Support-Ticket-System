@@ -52,6 +52,7 @@ jobs:
             BUILDKIT_PROGRESS=plain
 
       - name: Redeploy on Render
+        id: render
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
@@ -71,40 +72,65 @@ jobs:
             echo "$BODY"
             exit 1
           fi
+          DEPLOY_ID=$(echo "$BODY" | jq -r '.id // empty')
+          if [ -n "$DEPLOY_ID" ]; then
+            echo "deploy_id=${DEPLOY_ID}" >> "$GITHUB_OUTPUT"
+          fi
           echo "Render redeploy triggered: $BODY"
 
-      - name: Poll /api/health
+      - name: Wait for Render deploy + poll /api/health
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
         run: |
           if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
-            echo "SKIP: Render secrets not configured — health poll disabled."
+            echo "SKIP: Render secrets not configured — deploy wait disabled."
             exit 0
           fi
+
           SERVICE_HOST=$(curl -s -H "Authorization: Bearer ${RENDER_API_KEY}" \
             "https://api.render.com/v1/services/${RENDER_SERVICE_ID}" \
             | jq -r '.serviceDetails.url // empty')
-
           if [ -z "$SERVICE_HOST" ]; then
-            echo "ERROR: Could not get service host from Render API"
+            echo "ERROR: Could not get service URL from Render API"
             exit 1
           fi
+          echo "Service URL: ${SERVICE_HOST}"
 
-          URL="https://${SERVICE_HOST}"
-          echo "Service URL: ${URL}"
-          echo "Polling ${URL}/api/health ..."
+          DEPLOY_ID="${{ steps.render.outputs.deploy_id }}"
+          if [ -n "$DEPLOY_ID" ]; then
+            echo "Waiting for Render deploy ${DEPLOY_ID} to go live (max 20 min)..."
+            for i in $(seq 1 40); do
+              STATUS=$(curl -s -H "Authorization: Bearer ${RENDER_API_KEY}" \
+                "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${DEPLOY_ID}" \
+                | jq -r '.status // empty')
+              echo "Attempt $i/40 — deploy status: ${STATUS:-unknown}"
+              if [ "$STATUS" = "live" ]; then
+                echo "✓ Render deploy is live"
+                break
+              fi
+              if [ "$STATUS" = "build_failed" ] || [ "$STATUS" = "update_failed" ] || [ "$STATUS" = "canceled" ] || [ "$STATUS" = "deactivated" ]; then
+                echo "✗ Render deploy ended with status: ${STATUS}"
+                exit 1
+              fi
+              sleep 30
+            done
+            if [ "$STATUS" != "live" ]; then
+              echo "✗ Deploy did not reach 'live' within 20 minutes"
+              exit 1
+            fi
+          fi
 
-          for i in $(seq 1 24); do
-            if curl -sf --max-time 10 "${URL}/api/health" | grep -q '"status":"ok"'; then
+          echo "Polling ${SERVICE_HOST}/api/health ..."
+          for i in $(seq 1 10); do
+            if curl -sf --max-time 10 "${SERVICE_HOST}/api/health" | grep -q '"status":"ok"'; then
               echo "✓ Health check passed"
               exit 0
             fi
-            echo "Attempt $i/24 — not ready yet"
+            echo "Attempt $i/10 — not ready yet"
             sleep 15
           done
-
-          echo "✗ Health check FAILED after 24 attempts (6 minutes)"
+          echo "✗ Health check FAILED"
           exit 1
 
   frontend:
