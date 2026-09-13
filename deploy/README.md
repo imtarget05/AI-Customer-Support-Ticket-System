@@ -120,8 +120,8 @@ push to main → CI (pytest + build + leak scan + alembic + eval smoke)
 
 - CI jobs: `backend` (pytest, secret scan, alembic, eval smoke) + `frontend` (npm build + tests).
 - CD triggers: `workflow_run` (CI completed successfully on `main`) + `workflow_dispatch` (manual trigger from Actions UI).
-- Backend CD: builds the Docker image via `docker/build-push-action`, pushes to GHCR tagged with `sha-<commit>` + `latest`, then calls Render deploy API and polls `/api/health` until it returns 200 (up to 6 minutes).
-- Frontend CD: rebuilds the frontend and deploys to Cloudflare Pages via `wrangler-action`.
+- Backend CD: builds the Docker image via `docker/build-push-action`, pushes to GHCR tagged with the full commit SHA + `latest`, then calls the Render deploy API, waits for the deploy to reach `live` (up to 20 minutes — free tier builds are slow), then polls `/api/health` until it returns 200.
+- Frontend CD: deploys `frontend/dist` to the Cloudflare Pages project **`supportdesk`** (live at `https://supportdesk-aht.pages.dev`) via `wrangler pages deploy` on every CI-green push.
 - **Fail-closed**: if CI fails, CD does not run. If Render redeploy fails, the job fails and no further steps run.
 
 ### Required repository secrets
